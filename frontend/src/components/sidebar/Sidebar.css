@@ -1,0 +1,52 @@
+.Sidebar {
+    position: fixed;
+    top: 51px;
+    height: calc(100% - 50px);
+    width: 200px;
+    z-index: 101;
+    background-color: #4caf93;
+    cursor: pointer;
+}
+
+.Sidebar p {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    padding-left: 0.5rem;
+}
+
+.Sidebar>div {
+    padding: 9px 18px 8px
+}
+
+.SidebarTrigger {
+    text-align: right;
+}
+
+.SidebarMenu {
+    padding-inline-start: 0;
+}
+
+.SidebarMenu li {
+    display: flex;
+    align-items: center;
+    padding: 15px 18px 11px 15px;
+}
+
+.SidebarMenu li svg {
+    color: #ffffff;
+}
+
+.SidebarTriggerIcon {
+    font-size: 28px !important;
+    color: #ffffff;
+}
+
+.selected {
+    background-color: #f0f0f0;
+}
+
+.selected p,
+.selected svg {
+    color: #4caf93 !important;
+}

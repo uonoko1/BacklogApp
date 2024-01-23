@@ -1,0 +1,38 @@
+.Center {
+    position: relative;
+    top: 51px;
+    margin-left: 200px;
+    padding: 3rem 4rem 3rem 4rem;
+}
+
+.SearchBox {
+    background-color: #ffffff;
+    border: 1px solid #bdbdbd;
+    border-radius: 5px;
+    height: 47px;
+    width: calc(30% - 9.6px);
+    min-width: 350px;
+    display: flex;
+    align-items: center;
+}
+
+.SearchBox svg {
+    font-size: calc(47px * 0.8);
+    color: #bdbdbd;
+    padding: 0 0.4rem;
+    position: relative;
+    top: 1px;
+}
+
+.SearchBoxInput {
+    border: none;
+    height: calc(100% - 16px - 4px);
+    width: calc(100% - 50.38px);
+    padding: 8px 16px 8px 0;
+    font-size: 16px;
+
+}
+
+.SearchBoxInput:focus {
+    outline: none;
+}
