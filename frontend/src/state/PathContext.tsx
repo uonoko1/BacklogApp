@@ -5,10 +5,9 @@ interface PathContextType {
     setPath: Dispatch<SetStateAction<string>>;
 }
 
-// 正しい型を持つ初期値を指定
 const PathContext = createContext<PathContextType>({
     path: '',
-    setPath: () => { } // ここはダミーの関数
+    setPath: () => { }
 });
 
 export function usePath() {

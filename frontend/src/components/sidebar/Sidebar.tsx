@@ -16,7 +16,7 @@ export default function Sidebar() {
 
     useEffect(() => {
         const currentPath = location.pathname.split('/')[1];
-        if (currentPath !== 'users' && currentPath !== 'chat') {
+        if (currentPath !== 'users' && currentPath !== 'board') {
             setPath('tasks');
             return;
         }
@@ -37,9 +37,9 @@ export default function Sidebar() {
                     <PersonIcon />
                     <p>ユーザー</p>
                 </li>
-                <li className={`${path === 'chat' && 'selected'}`} onClick={() => navigate('/chat')}>
+                <li className={`${path === 'board' && 'selected'}`} onClick={() => navigate('/board')}>
                     <ChatIcon />
-                    <p>チャット</p>
+                    <p>掲示板</p>
                 </li>
             </ul>
         </div>
