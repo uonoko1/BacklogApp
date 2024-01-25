@@ -18,6 +18,7 @@ type AuthUsecase interface {
 	Create(ctx context.Context, user *model.User) (*model.UserWithToken, error)
 	RefreshAccessToken(ctx context.Context, refreshToken string) (string, error)
 	CreateRefreshToken(ctx context.Context, userId, refreshToken string) error
+	Logout(ctx context.Context, refreshToken string) error
 }
 
 type authUsecase struct {
@@ -123,11 +124,6 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 		return nil, err
 	}
 
-	err = a.r.CreateRefreshToken(ctx, user.UserId, refreshToken)
-	if err != nil {
-		return nil, err
-	}
-
 	return &model.UserWithToken{
 		User:         responseUser,
 		AccessToken:  accessToken,
@@ -156,6 +152,10 @@ func (a *authUsecase) RefreshAccessToken(ctx context.Context, refreshToken strin
 
 func (a *authUsecase) CreateRefreshToken(ctx context.Context, userId, refreshToken string) error {
 	return a.r.CreateRefreshToken(ctx, userId, refreshToken)
+}
+
+func (a *authUsecase) Logout(ctx context.Context, refreshToken string) error {
+	return a.r.DeleteRefreshToken(ctx, refreshToken)
 }
 
 func hashPassword(password string) (string, error) {

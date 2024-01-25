@@ -14,6 +14,7 @@ type AuthRepository interface {
 	Create(ctx context.Context, user *model.User) (*model.User, error)
 	CreateRefreshToken(ctx context.Context, UserId, refreshToken string) error
 	FindRefreshToken(ctx context.Context, refreshToken string) error
+	DeleteRefreshToken(ctx context.Context, refreshToken string) error
 }
 
 type authRepository struct {
@@ -74,4 +75,10 @@ func (r *authRepository) FindRefreshToken(ctx context.Context, refreshToken stri
 	}
 
 	return nil
+}
+
+func (r *authRepository) DeleteRefreshToken(ctx context.Context, refreshToken string) error {
+	query := `DELETE FROM refresh_tokens WHERE refreshtoken = ?`
+	_, err := r.db.ExecContext(ctx, query, refreshToken)
+	return err
 }

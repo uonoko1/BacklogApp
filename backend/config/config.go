@@ -1,4 +1,6 @@
 package config
 
-const JwtAccessTokenSecret = "your_access_token_secret"
-const JwtRefreshTokenSecret = "your_refresh_token_secret"
+import "os"
+
+var JwtAccessTokenSecret = os.Getenv("SECRETKEY1")
+var JwtRefreshTokenSecret = os.Getenv("SECRETKEY2")
