@@ -2,8 +2,8 @@ import React, { useEffect } from 'react'
 import "./Sidebar.css"
 import MenuIcon from '@mui/icons-material/Menu';
 import PersonIcon from '@mui/icons-material/Person';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import GroupsIcon from '@mui/icons-material/Groups';
+import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
+import ChatIcon from '@mui/icons-material/Chat';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { usePath } from '../../state/PathContext';
@@ -16,8 +16,8 @@ export default function Sidebar() {
 
     useEffect(() => {
         const currentPath = location.pathname.split('/')[1];
-        if (currentPath !== 'users' && currentPath !== 'tasks' && currentPath !== 'teams') {
-            setPath('projects');
+        if (currentPath !== 'users' && currentPath !== 'chat') {
+            setPath('tasks');
             return;
         }
         setPath(currentPath);
@@ -29,21 +29,17 @@ export default function Sidebar() {
                 <MenuIcon className='SidebarTriggerIcon' />
             </div>
             <ul className="SidebarMenu" onClick={(e) => e.stopPropagation()}>
-                <li className={`${path === 'projects' && 'selected'}`} onClick={() => navigate('/')}>
+                <li className={`${path === 'tasks' && 'selected'}`} onClick={() => navigate('/')}>
                     <ConstructionIcon />
-                    <p>プロジェクト</p>
+                    <p>課題</p>
                 </li>
                 <li className={`${path === 'users' && 'selected'}`} onClick={() => navigate('/users')}>
                     <PersonIcon />
                     <p>ユーザー</p>
                 </li>
-                <li className={`${path === 'teams' && 'selected'}`} onClick={() => navigate('/teams')}>
-                    <GroupsIcon />
-                    <p>チーム</p>
-                </li>
-                <li className={`${path === 'tasks' && 'selected'}`} onClick={() => navigate('/tasks')}>
-                    <AssignmentIcon />
-                    <p>課題</p>
+                <li className={`${path === 'chat' && 'selected'}`} onClick={() => navigate('/chat')}>
+                    <ChatIcon />
+                    <p>チャット</p>
                 </li>
             </ul>
         </div>

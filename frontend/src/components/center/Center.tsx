@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import "./Center.css"
 import SearchIcon from '@mui/icons-material/Search';
-import ListItem from '../listItem/ListItem';
+import { usePath } from '../../state/PathContext';
+import Tasks from '../../pages/tasks/Tasks';
 
 export default function Center() {
+    const { path } = usePath();
     const [searchInput, setSearchInput] = useState('');
 
     return (
@@ -12,18 +14,7 @@ export default function Center() {
                 <SearchIcon />
                 <input type='text' value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className='SearchBoxInput' />
             </div>
-            <div className='Favorite'>
-                <h4>お気に入り</h4>
-                <ul className='FavoriteList'>
-                    <ListItem />
-                </ul>
-            </div>
-            <div className='SearchResult'>
-                <h4>検索結果(新しい順)</h4>
-                <ul className='SearchResultList'>
-                    <ListItem />
-                </ul>
-            </div>
+            {path === 'tasks' && <Tasks />}
         </div>
     )
 }
