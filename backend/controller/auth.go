@@ -3,6 +3,7 @@ package controller
 import (
 	"backend/controller/request"
 	"backend/usecase"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -36,6 +37,7 @@ func (c *authController) AuthByLogin(ctx echo.Context) error {
 
 	userWithToken, err := c.u.AuthByLogin(ctx.Request().Context(), req.Email, req.Password)
 	if err != nil {
+		fmt.Println("err:", err)
 		return ctx.JSON(http.StatusUnauthorized, err.Error())
 	}
 

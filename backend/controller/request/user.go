@@ -21,5 +21,6 @@ func ToModelUser(req CreateUserRequest) *model.User {
 		Username: req.Username,
 		UserId:   req.UserId,
 		Email:    req.Email,
+		Password: req.Password,
 	}
 }

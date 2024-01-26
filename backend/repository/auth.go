@@ -25,13 +25,13 @@ func NewAuthRepository(db *sql.DB) AuthRepository {
 	return &authRepository{db}
 }
 
-var userField = "userid, username, password, description"
+var userField = "userid, username, email, password, description"
 
 func (r *authRepository) FindUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	var user model.User
 	query := fmt.Sprintf("SELECT %s FROM users WHERE email = ?", userField)
 
-	err := r.db.QueryRowContext(ctx, query, email).Scan(&user.UserId, &user.Username, &user.Email, &user.Desc)
+	err := r.db.QueryRowContext(ctx, query, email).Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.Desc)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, err

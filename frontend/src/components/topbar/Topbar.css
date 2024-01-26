@@ -1,0 +1,39 @@
+.UserMenuOverlay {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: end;
+    align-items: start;
+    left: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.UserMenuDialog {
+    background-color: #fff;
+    border-radius: 2px;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    position: relative;
+    z-index: 1000;
+    margin: 2rem 2rem 0 0;
+    max-width: 270px;
+    min-width: 180px;
+    box-shadow: 0 0 6px 0 rgba(0, 0, 0, .35);
+}
+
+.UserMenuDialog li {
+    line-height: 2rem;
+}
+
+.UserMenuDialog li button {
+    font-size: 0.9rem;
+}
+
+.UserMenuGreet {
+    color: #777;
+}

@@ -35,11 +35,13 @@ func NewAuthUsecase(r repository.AuthRepository, transaction transaction.Transac
 func (a *authUsecase) AuthByLogin(ctx context.Context, email, password string) (*model.UserWithToken, error) {
 	user, err := a.r.FindUserByEmail(ctx, email)
 	if err != nil {
+		fmt.Println("err:", err)
 		return nil, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
+		fmt.Println("err:", err)
 		return nil, err
 	}
 
@@ -52,16 +54,19 @@ func (a *authUsecase) AuthByLogin(ctx context.Context, email, password string) (
 
 	accessToken, err := a.generateAccessTokens(user.Email)
 	if err != nil {
+		fmt.Println("err:", err)
 		return nil, err
 	}
 
 	refreshToken, err := a.generateRefreshTokens(user.Email)
 	if err != nil {
+		fmt.Println("err:", err)
 		return nil, err
 	}
 
 	err = a.r.CreateRefreshToken(ctx, responseUser.UserId, refreshToken)
 	if err != nil {
+		fmt.Println("err:", err)
 		return nil, err
 	}
 
@@ -100,6 +105,15 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("user:", user)
+		fmt.Println("パスワード:", user.Password)
+		fmt.Println("ハッシュパスワード:", hashedPassword)
+		err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(user.Password))
+		if err != nil {
+			fmt.Println("err:", err)
+			return nil, err
+		}
+		fmt.Println("clear!")
 		user.Password = hashedPassword
 
 		createdUser, err := a.r.Create(txCtx, user)
