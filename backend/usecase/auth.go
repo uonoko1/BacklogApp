@@ -4,7 +4,9 @@ import (
 	"backend/config"
 	"backend/model"
 	"backend/repository"
+	"backend/transaction"
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -22,11 +24,12 @@ type AuthUsecase interface {
 }
 
 type authUsecase struct {
-	r repository.AuthRepository
+	r           repository.AuthRepository
+	transaction transaction.Transaction
 }
 
-func NewAuthUsecase(r repository.AuthRepository) AuthUsecase {
-	return &authUsecase{r}
+func NewAuthUsecase(r repository.AuthRepository, transaction transaction.Transaction) AuthUsecase {
+	return &authUsecase{r, transaction}
 }
 
 func (a *authUsecase) AuthByLogin(ctx context.Context, email, password string) (*model.UserWithToken, error) {
@@ -44,7 +47,7 @@ func (a *authUsecase) AuthByLogin(ctx context.Context, email, password string) (
 		UserId:   user.UserId,
 		Username: user.Username,
 		Email:    user.Email,
-		Desc:     user.Desc,
+		Desc:     nullStringToString(user.Desc),
 	}
 
 	accessToken, err := a.generateAccessTokens(user.Email)
@@ -77,6 +80,7 @@ func (a *authUsecase) AuthByToken(ctx context.Context, token string) (*model.Res
 
 	user, err := a.r.FindUserByEmail(ctx, email)
 	if err != nil {
+		fmt.Println("err:", err)
 		return nil, err
 	}
 
@@ -84,51 +88,61 @@ func (a *authUsecase) AuthByToken(ctx context.Context, token string) (*model.Res
 		UserId:   user.UserId,
 		Username: user.Username,
 		Email:    user.Email,
-		Desc:     user.Desc,
+		Desc:     nullStringToString(user.Desc),
 	}
 
 	return responseUser, nil
 }
 
 func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.UserWithToken, error) {
-	hashedPassword, err := hashPassword(user.Password)
+	result, err := a.transaction.DoInTx(ctx, func(txCtx context.Context) (any, error) {
+		hashedPassword, err := hashPassword(user.Password)
+		if err != nil {
+			return nil, err
+		}
+		user.Password = hashedPassword
+
+		createdUser, err := a.r.Create(txCtx, user)
+		if err != nil {
+			return nil, err
+		}
+
+		accessToken, err := a.generateAccessTokens(user.Email)
+		if err != nil {
+			return nil, err
+		}
+		refreshToken, err := a.generateRefreshTokens(user.Email)
+		if err != nil {
+			return nil, err
+		}
+
+		err = a.r.CreateRefreshToken(txCtx, createdUser.UserId, refreshToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return &model.UserWithToken{
+			User: &model.ResponseUser{
+				UserId:   createdUser.UserId,
+				Username: createdUser.Username,
+				Email:    createdUser.Email,
+				Desc:     nullStringToString(user.Desc),
+			},
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+		}, nil
+	})
+
 	if err != nil {
 		return nil, err
 	}
-	user.Password = hashedPassword
 
-	user, err = a.r.Create(ctx, user)
-	if err != nil {
-		return nil, err
+	userWithToken, ok := result.(*model.UserWithToken)
+	if !ok {
+		return nil, fmt.Errorf("failed to cast result to *model.UserWithToken")
 	}
 
-	responseUser := &model.ResponseUser{
-		UserId:   user.UserId,
-		Username: user.Username,
-		Email:    user.Email,
-		Desc:     user.Desc,
-	}
-
-	accessToken, err := a.generateAccessTokens(user.Email)
-	if err != nil {
-		return nil, err
-	}
-
-	refreshToken, err := a.generateRefreshTokens(user.Email)
-	if err != nil {
-		return nil, err
-	}
-
-	err = a.r.CreateRefreshToken(ctx, responseUser.UserId, refreshToken)
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.UserWithToken{
-		User:         responseUser,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}, nil
+	return userWithToken, nil
 }
 
 func (a *authUsecase) RefreshAccessToken(ctx context.Context, refreshToken string) (string, error) {
@@ -161,6 +175,13 @@ func (a *authUsecase) Logout(ctx context.Context, refreshToken string) error {
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
+}
+
+func nullStringToString(ns sql.NullString) string {
+	if ns.Valid {
+		return ns.String
+	}
+	return ""
 }
 
 // トークン系関数

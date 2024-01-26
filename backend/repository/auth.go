@@ -25,7 +25,7 @@ func NewAuthRepository(db *sql.DB) AuthRepository {
 	return &authRepository{db}
 }
 
-var userField = "userid, username, password, desc"
+var userField = "userid, username, password, description"
 
 func (r *authRepository) FindUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	var user model.User
@@ -43,9 +43,10 @@ func (r *authRepository) FindUserByEmail(ctx context.Context, email string) (*mo
 }
 
 func (r *authRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
-	query := `INSERT INTO users (userid, username, email, password, description) VALUES (?, ?, ?, ?, ?)`
-	_, err := r.db.ExecContext(ctx, query, user.UserId, user.Username, user.Email, user.Password, user.Desc)
+	query := `INSERT INTO users (userid, username, email, password) VALUES (?, ?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, user.UserId, user.Username, user.Email, user.Password)
 	if err != nil {
+		fmt.Println("err:", err)
 		return nil, err
 	}
 
@@ -53,9 +54,10 @@ func (r *authRepository) Create(ctx context.Context, user *model.User) (*model.U
 }
 
 func (r *authRepository) CreateRefreshToken(ctx context.Context, UserId, refreshToken string) error {
-	query := `INSERT INTO refresh_token (userid, refreshtoken) VALUES (?, ?)`
+	query := `INSERT INTO refresh_tokens (userid, refreshtoken) VALUES (?, ?)`
 	_, err := r.db.ExecContext(ctx, query, UserId, refreshToken)
 	if err != nil {
+		fmt.Println("err:", err)
 		return err
 	}
 	return nil

@@ -7,8 +7,9 @@ import (
 )
 
 func AuthRoutes(e *echo.Echo, authController controller.AuthController) {
-	e.POST("/auth/login", authController.AuthByLogin)
-	e.POST("/auth/register", authController.Create)
-	e.POST("/auth/refresh", authController.RefreshAccessToken)
-	e.POST("/auth/logout", authController.Logout)
+	e.POST("/api/auth/login", authController.AuthByLogin)
+	e.POST("/api/auth/register", authController.Create)
+	e.GET("/api/auth/user", authController.AuthByToken)
+	e.POST("/api/auth/refresh", authController.RefreshAccessToken)
+	e.DELETE("/api/auth/logout", authController.Logout)
 }
