@@ -3,15 +3,11 @@ import React, { createContext, useContext, useState, Dispatch, SetStateAction } 
 interface ModalContextType {
     showLogin: boolean;
     setShowLogin: Dispatch<SetStateAction<boolean>>;
-    showRegister: boolean;
-    setShowRegister: Dispatch<SetStateAction<boolean>>;
 }
 
 const ModalContext = createContext<ModalContextType>({
     showLogin: false,
     setShowLogin: () => { },
-    showRegister: false,
-    setShowRegister: () => { }
 });
 
 export function useModal() {
@@ -20,10 +16,9 @@ export function useModal() {
 
 export function ModalProvider({ children }: { children: React.ReactNode }) {
     const [showLogin, setShowLogin] = useState(false);
-    const [showRegister, setShowRegister] = useState(false);
 
     return (
-        <ModalContext.Provider value={{ showLogin, setShowLogin, showRegister, setShowRegister }}>
+        <ModalContext.Provider value={{ showLogin, setShowLogin }}>
             {children}
         </ModalContext.Provider>
     )
