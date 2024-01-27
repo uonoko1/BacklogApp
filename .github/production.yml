@@ -1,0 +1,74 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Node.js for frontend
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Install frontend dependencies
+      run: cd frontend && npm ci
+
+    - name: Create .env file for frontend
+      run: |
+        echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" >> frontend/.env
+
+    - name: Build frontend
+      run: cd frontend && npm run build
+
+    - name: Transfer frontend build to production
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        source: "frontend/build/"
+        target: "/var/www/backlog.daichisakai.net"
+
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.21.6'
+
+    - name: Create .env file for backend
+      run: |
+        echo "DB_INFO=${{ secrets.DB_INFO }}" >> backend/.env
+        echo "API_URL=${{ secrets.API_URL }}" >> backend/.env
+        echo "SECRETKEY1=${{ secrets.SECRETKEY1 }}" >> backend/.env
+        echo "SECRETKEY2=${{ secrets.SECRETKEY2 }}" >> backend/.env
+
+    - name: Build backend
+      run: |
+        cd backend
+        go build -o build main.go
+
+    - name: Transfer backend build to production
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        source: "backend/build"
+        target: "/home/githubactions/BacklogApp/backend/build"
+
+    - name: Start or restart the backend application using PM2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          cd /home/githubactions/BacklogApp/backend
+          pm2 start ecosystem.config.js || pm2 restart ecosystem.config.js

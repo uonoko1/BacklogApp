@@ -9,6 +9,7 @@ import (
 	"backend/usecase"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-playground/validator"
 	"github.com/joho/godotenv"
@@ -34,7 +35,7 @@ func main() {
 	}
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     []string{os.Getenv("API_URL")},
 		AllowMethods:     []string{echo.GET, echo.PUT, echo.POST, echo.DELETE, echo.PATCH},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 		AllowCredentials: true,
@@ -50,5 +51,5 @@ func main() {
 
 	routes.AuthRoutes(e, ac)
 
-	e.Start("localhost:5000")
+	e.Start("localhost:5020")
 }
