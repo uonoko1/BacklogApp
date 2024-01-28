@@ -62,17 +62,12 @@ jobs:
     # Application stop
     - name: Stop the backend application
       run: |
-        ssh -i deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} 'pm2 stop BacklogApp'
+        ssh -i deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} '/home/githubactions/.npm-global/bin/pm2 stop BacklogApp'
 
     # Backend deployment
     - name: Transfer backend build to production
       run: |
         scp -i deploy_key.pem -r backend/build ${{ secrets.USER }}@${{ secrets.HOST }}:/home/githubactions/BacklogApp/backend/build
-
-    # Go modules setup on server
-    - name: Setup Go modules on server
-      run: |
-        ssh -i deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} 'cd /home/githubactions/BacklogApp/backend && go mod tidy'
 
     # Application start
     - name: Restart the backend application
