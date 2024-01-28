@@ -72,4 +72,4 @@ jobs:
     # Application start
     - name: Restart the backend application
       run: |
-        ssh -i deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} 'cd /home/githubactions/BacklogApp/backend && pm2 restart BacklogApp'
+        ssh -i deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} 'cd /home/githubactions/BacklogApp/backend && /home/githubactions/.npm-global/bin/pm2 restart BacklogApp'
