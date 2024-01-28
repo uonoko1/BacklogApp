@@ -19,49 +19,39 @@ jobs:
       run: cd frontend && npm ci
 
     - name: Create .env file for frontend
-      run: |
-        echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" >> frontend/.env
+      run: echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" > frontend/.env
 
     - name: Build frontend
-      env:
-        CI: false
       run: cd frontend && npm run build
 
-    - name: Setup SSH keys
+    - name: Decode SSH private key
       run: |
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > deploy_key.pem
-        chmod 600 deploy_key.pem
-        mkdir -p ~/.ssh
-        ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+        mkdir -p $HOME/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 --decode > $HOME/.ssh/deploy_key.pem
+        chmod 600 $HOME/.ssh/deploy_key.pem
+        ssh-keyscan ${{ secrets.HOST }} >> $HOME/.ssh/known_hosts
 
     - name: Transfer frontend build to production
-      run: |
-        scp -i deploy_key.pem -r frontend/build/* ${{ secrets.USER }}@${{ secrets.HOST }}:/var/www/backlog.daichisakai.net
+      run: scp -i $HOME/.ssh/deploy_key.pem -r frontend/build/* ${{ secrets.USER }}@${{ secrets.HOST }}:/var/www/backlog.daichisakai.net
 
-    - name: Setup Go
+    - name: Setup Go for backend
       uses: actions/setup-go@v2
       with:
         go-version: '1.21.6'
 
     - name: Create .env file for backend
       run: |
-        echo "DB_INFO=${{ secrets.DB_INFO }}" >> backend/.env
+        echo "DB_INFO=${{ secrets.DB_INFO }}" > backend/.env
         echo "API_URL=${{ secrets.API_URL }}" >> backend/.env
         echo "SECRETKEY1=${{ secrets.SECRETKEY1 }}" >> backend/.env
         echo "SECRETKEY2=${{ secrets.SECRETKEY2 }}" >> backend/.env
 
     - name: Build backend
-      run: |
-        cd backend
-        go build -o build main.go
+      run: cd backend && go build -o build/main .
 
     - name: Transfer backend build to production
-      run: |
-        scp -i deploy_key.pem -r backend/build ${{ secrets.USER }}@${{ secrets.HOST }}:/home/githubactions/BacklogApp/backend/build
+      run: scp -i $HOME/.ssh/deploy_key.pem -r backend/build/main ${{ secrets.USER }}@${{ secrets.HOST }}:/home/githubactions/BacklogApp/backend/build
 
     - name: Start or restart the backend application using PM2
       run: |
-        ssh -i deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} << EOF
-          cd /home/githubactions/BacklogApp/backend
-          pm2 start ecosystem.config.js || pm2 restart ecosystem.config.js
-        EOF
+        ssh -i $HOME/.ssh/deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} 'cd /home/githubactions/BacklogApp/backend && pm2 start ecosystem.config.js || pm2 restart ecosystem.config.js'
