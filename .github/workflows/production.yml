@@ -22,6 +22,9 @@ jobs:
     - name: Create .env file for frontend
       run: |
         echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" >> frontend/.env
+        echo "REACT_APP_API=${{ secrets.REACT_APP_API }}" >> frontend/.env
+        echo "REACT_APP_BACKLOG_CLIENTID=${{ secrets.REACT_APP_BACKLOG_CLIENTID }}" >> frontend/.env
+        echo "REACT_APP_BACKLOG_REDIRECT_URI=${{ secrets.REACT_APP_BACKLOG_REDIRECT_URI }}" >> frontend/.env
 
     - name: Build frontend
       env:
