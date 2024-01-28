@@ -59,6 +59,11 @@ jobs:
         cd backend
         go build -o build main.go
 
+    # Application stop
+    - name: Stop the backend application
+      run: |
+        ssh -i deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} 'pm2 stop BacklogApp'
+
     # Backend deployment
     - name: Transfer backend build to production
       run: |
@@ -69,7 +74,7 @@ jobs:
       run: |
         ssh -i deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} 'cd /home/githubactions/BacklogApp/backend && go mod tidy'
 
-    # Application start/restart
-    - name: Start or restart the backend application using PM2
+    # Application start
+    - name: Restart the backend application
       run: |
-        ssh -i deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} 'cd /home/githubactions/BacklogApp/backend && pm2 start ecosystem.config.js || pm2 restart ecosystem.config.js'
+        ssh -i deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} 'cd /home/githubactions/BacklogApp/backend && pm2 restart BacklogApp'
