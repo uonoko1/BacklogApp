@@ -10,27 +10,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    # Frontend setup and build
-    - name: Setup Node.js for frontend
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-
-    - name: Install frontend dependencies
-      run: cd frontend && npm ci
-
-    - name: Create .env file for frontend
-      run: |
-        echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" >> frontend/.env
-        echo "REACT_APP_API=${{ secrets.REACT_APP_API }}" >> frontend/.env
-        echo "REACT_APP_BACKLOG_CLIENTID=${{ secrets.REACT_APP_BACKLOG_CLIENTID }}" >> frontend/.env
-        echo "REACT_APP_BACKLOG_REDIRECT_URI=${{ secrets.REACT_APP_BACKLOG_REDIRECT_URI }}" >> frontend/.env
-
-    - name: Build frontend
-      env:
-        CI: false
-      run: cd frontend && npm run build
-
     # SSH setup
     - name: Setup SSH keys
       run: |
@@ -39,10 +18,23 @@ jobs:
         mkdir -p ~/.ssh
         ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-    # Frontend deployment
-    - name: Transfer frontend build to production
+    # Transfer frontend source and .env file to production
+    - name: Transfer frontend source to production
       run: |
-        rsync -avz --exclude='node_modules' --no-times --no-perms -e "ssh -i deploy_key.pem" frontend/build/ ${{ secrets.USER }}@${{ secrets.HOST }}:/var/www/backlog.daichisakai.net/
+        rsync -avz --exclude='node_modules' --exclude='.env' --no-times --no-perms -e "ssh -i deploy_key.pem" frontend/ ${{ secrets.USER }}@${{ secrets.HOST }}:/home/githubactions/BacklogApp/frontend/
+
+    # Create .env file, build frontend, and deploy to production server
+    - name: Build and deploy frontend on production server
+      run: |
+        ssh -i deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} '
+        cd /home/githubactions/BacklogApp/frontend/ && 
+        echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" > .env &&
+        echo "REACT_APP_API=${{ secrets.REACT_APP_API }}" >> .env &&
+        echo "REACT_APP_BACKLOG_CLIENTID=${{ secrets.REACT_APP_BACKLOG_CLIENTID }}" >> .env &&
+        echo "REACT_APP_BACKLOG_REDIRECT_URI=${{ secrets.REACT_APP_BACKLOG_REDIRECT_URI }}" >> .env &&
+        npm install && npm run build &&
+        rm -rf /var/www/backlog.daichisakai.net/* &&
+        cp -r build/* /var/www/backlog.daichisakai.net/'
 
     # Backend setup and build
     - name: Setup Go
