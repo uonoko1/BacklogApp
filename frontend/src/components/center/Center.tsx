@@ -22,7 +22,7 @@ export default function Center() {
         const CLIENT_ID = process.env.REACT_APP_BACKLOG_CLIENTID;
         const REDIRECT_URI = process.env.REACT_APP_BACKLOG_REDIRECT_URI;
 
-        window.location.href = `https://${spaceInput}.backlog.com/OAuth2AccessRequest.action?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}`;
+        window.location.href = `https://${spaceInput}.backlog.jp/OAuth2AccessRequest.action?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}`;
     }
 
     return (
