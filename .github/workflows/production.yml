@@ -29,7 +29,7 @@ jobs:
         ssh -i deploy_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} '
         cd /home/githubactions/BacklogApp/frontend/ && 
         echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" > .env &&
-        echo "REACT_APP_API=${{ secrets.REACT_APP_API }}" >> .env &&
+        echo "REACT_APP_URL=${{ secrets.REACT_APP_URL }}" >> .env &&
         echo "REACT_APP_BACKLOG_CLIENTID=${{ secrets.REACT_APP_BACKLOG_CLIENTID }}" >> .env &&
         echo "REACT_APP_BACKLOG_REDIRECT_URI=${{ secrets.REACT_APP_BACKLOG_REDIRECT_URI }}" >> .env &&
         npm install && npm run build &&
