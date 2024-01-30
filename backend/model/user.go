@@ -25,9 +25,10 @@ type UserWithToken struct {
 }
 
 type ResponseUser struct {
-	UserId   string `json:"userid"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Desc     string `json:"desc"`
-	State    string `json:"state"`
+	UserId       string `json:"userid"`
+	Username     string `json:"username"`
+	Email        string `json:"email"`
+	Desc         string `json:"desc"`
+	State        string `json:"state"`
+	BacklogOAuth bool   `json:"backlog_oauth"`
 }

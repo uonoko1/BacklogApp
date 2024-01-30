@@ -31,7 +31,7 @@ func (r *authRepository) FindUserByEmail(ctx context.Context, email string) (*mo
 	var user model.User
 	query := fmt.Sprintf("SELECT %s FROM users WHERE email = ?", userField)
 
-	err := r.db.QueryRowContext(ctx, query, email).Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.Description)
+	err := r.db.QueryRowContext(ctx, query, email).Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.Description, &user.BacklogRefreshToken)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, err

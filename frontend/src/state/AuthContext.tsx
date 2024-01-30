@@ -7,7 +7,7 @@ interface UserType {
     email: string;
     desc: string;
     state: string,
-    backlog: boolean
+    backlog_oauth: boolean
 }
 
 interface AuthContextType {

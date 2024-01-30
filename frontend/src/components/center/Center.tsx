@@ -30,7 +30,7 @@ export default function Center() {
     }
 
     useEffect(() => {
-        if (path !== 'projects' && path !== 'tasks') return;
+        if ((path !== 'projects' && path !== 'tasks') || (user && !user.backlog_oauth)) return;
         const fetchBacklogData = async () => {
             try {
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/${path}`);
@@ -49,7 +49,7 @@ export default function Center() {
     }, [path])
 
     return (
-        <div className={`Center ${(!user || !user.backlog) && (path === 'projects' || path === 'tasks') ? 'AuthCenter' : ''}`}>
+        <div className={`Center ${(!user || !user.backlog_oauth) && (path === 'projects' || path === 'tasks') ? 'AuthCenter' : ''}`}>
             {path === 'projects' || path === 'tasks' ?
                 <>
                     <div className="BacklogOAuthDialog">

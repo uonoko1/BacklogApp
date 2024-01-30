@@ -60,12 +60,15 @@ func (a *authUsecase) AuthByLogin(ctx context.Context, email, password string) (
 		return nil, fmt.Errorf("failed to encrypt user ID: %w", err)
 	}
 
+	backlogOAuth := !user.BacklogRefreshToken.Valid
+
 	responseUser := &model.ResponseUser{
-		UserId:   user.UserId,
-		Username: user.Username,
-		Email:    user.Email,
-		Desc:     nullStringToString(user.Description),
-		State:    encryptedUserID,
+		UserId:       user.UserId,
+		Username:     user.Username,
+		Email:        user.Email,
+		Desc:         nullStringToString(user.Description),
+		State:        encryptedUserID,
+		BacklogOAuth: backlogOAuth,
 	}
 
 	accessToken, err := a.generateAccessTokens(user.Email)
@@ -111,12 +114,15 @@ func (a *authUsecase) AuthByToken(ctx context.Context, token string) (*model.Res
 		return nil, fmt.Errorf("failed to encrypt user ID: %w", err)
 	}
 
+	backlogOAuth := !user.BacklogRefreshToken.Valid
+
 	responseUser := &model.ResponseUser{
-		UserId:   user.UserId,
-		Username: user.Username,
-		Email:    user.Email,
-		Desc:     nullStringToString(user.Description),
-		State:    encryptedUserID,
+		UserId:       user.UserId,
+		Username:     user.Username,
+		Email:        user.Email,
+		Desc:         nullStringToString(user.Description),
+		State:        encryptedUserID,
+		BacklogOAuth: backlogOAuth,
 	}
 
 	return responseUser, nil
@@ -163,11 +169,12 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 
 		return &model.UserWithToken{
 			User: &model.ResponseUser{
-				UserId:   createdUser.UserId,
-				Username: createdUser.Username,
-				Email:    createdUser.Email,
-				Desc:     nullStringToString(user.Description),
-				State:    encryptedUserID,
+				UserId:       createdUser.UserId,
+				Username:     createdUser.Username,
+				Email:        createdUser.Email,
+				Desc:         nullStringToString(user.Description),
+				State:        encryptedUserID,
+				BacklogOAuth: false,
 			},
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
