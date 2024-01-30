@@ -3,6 +3,7 @@ package main
 import (
 	"backend/controller"
 	"backend/infra"
+	"backend/middleware"
 	"backend/repository"
 	"backend/routes"
 	"backend/transaction"
@@ -14,7 +15,7 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	echoMiddleware "github.com/labstack/echo/middleware"
 )
 
 type CustomerValidator struct {
@@ -34,7 +35,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	e := echo.New()
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+	e.Use(echoMiddleware.CORSWithConfig(echoMiddleware.CORSConfig{
 		AllowOrigins:     []string{os.Getenv("API_URL")},
 		AllowMethods:     []string{echo.GET, echo.PUT, echo.POST, echo.DELETE, echo.PATCH},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
@@ -46,10 +47,15 @@ func main() {
 	db := infra.Connect()
 	transaction := transaction.NewTransaction(db)
 	ar := repository.NewAuthRepository(db)
+	br := repository.NewBacklogRepository(db)
 	au := usecase.NewAuthUsecase(ar, transaction)
+	bu := usecase.NewBacklogUsecase(br)
 	ac := controller.NewAuthController(au)
+	bc := controller.NewBacklogController(bu)
+	am := middleware.AuthMiddleware(au)
 
 	routes.AuthRoutes(e, ac)
+	routes.BacklogRoutes(e, bc, am)
 
 	e.Start("localhost:5020")
 }

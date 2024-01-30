@@ -7,8 +7,16 @@ import (
 	"backend/transaction"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
+
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
+	"io"
+	"os"
 
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
@@ -21,6 +29,7 @@ type AuthUsecase interface {
 	RefreshAccessToken(ctx context.Context, refreshToken string) (string, error)
 	CreateRefreshToken(ctx context.Context, userId, refreshToken string) error
 	Logout(ctx context.Context, refreshToken string) error
+	ReturnUserAndAccessToken(ctx context.Context, refreshToken string) (string, *model.User, error)
 }
 
 type authUsecase struct {
@@ -45,11 +54,18 @@ func (a *authUsecase) AuthByLogin(ctx context.Context, email, password string) (
 		return nil, err
 	}
 
+	encryptedUserID, err := encryptUserID(user.Id)
+	if err != nil {
+		// encryptUserIDからのエラーを処理
+		return nil, fmt.Errorf("failed to encrypt user ID: %w", err)
+	}
+
 	responseUser := &model.ResponseUser{
 		UserId:   user.UserId,
 		Username: user.Username,
 		Email:    user.Email,
-		Desc:     nullStringToString(user.Desc),
+		Desc:     nullStringToString(user.Description),
+		State:    encryptedUserID,
 	}
 
 	accessToken, err := a.generateAccessTokens(user.Email)
@@ -89,11 +105,18 @@ func (a *authUsecase) AuthByToken(ctx context.Context, token string) (*model.Res
 		return nil, err
 	}
 
+	encryptedUserID, err := encryptUserID(user.Id)
+	if err != nil {
+		// encryptUserIDからのエラーを処理
+		return nil, fmt.Errorf("failed to encrypt user ID: %w", err)
+	}
+
 	responseUser := &model.ResponseUser{
 		UserId:   user.UserId,
 		Username: user.Username,
 		Email:    user.Email,
-		Desc:     nullStringToString(user.Desc),
+		Desc:     nullStringToString(user.Description),
+		State:    encryptedUserID,
 	}
 
 	return responseUser, nil
@@ -105,9 +128,6 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("user:", user)
-		fmt.Println("パスワード:", user.Password)
-		fmt.Println("ハッシュパスワード:", hashedPassword)
 		err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(user.Password))
 		if err != nil {
 			fmt.Println("err:", err)
@@ -135,12 +155,19 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 			return nil, err
 		}
 
+		encryptedUserID, err := encryptUserID(createdUser.Id)
+		if err != nil {
+			// encryptUserIDからのエラーを処理
+			return nil, fmt.Errorf("failed to encrypt user ID: %w", err)
+		}
+
 		return &model.UserWithToken{
 			User: &model.ResponseUser{
 				UserId:   createdUser.UserId,
 				Username: createdUser.Username,
 				Email:    createdUser.Email,
-				Desc:     nullStringToString(user.Desc),
+				Desc:     nullStringToString(user.Description),
+				State:    encryptedUserID,
 			},
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
@@ -186,6 +213,30 @@ func (a *authUsecase) Logout(ctx context.Context, refreshToken string) error {
 	return a.r.DeleteRefreshToken(ctx, refreshToken)
 }
 
+func (a *authUsecase) ReturnUserAndAccessToken(ctx context.Context, refreshToken string) (string, *model.User, error) {
+	err := a.r.FindRefreshToken(ctx, refreshToken)
+	if err != nil {
+		return "", nil, err
+	}
+
+	email, err := a.decodeToken(refreshToken)
+	if err != nil {
+		return "", nil, err
+	}
+
+	accessToken, err := a.generateAccessTokens(email)
+	if err != nil {
+		return "", nil, err
+	}
+
+	user, err := a.r.FindUserByEmail(ctx, email)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return accessToken, user, nil
+}
+
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
@@ -196,6 +247,29 @@ func nullStringToString(ns sql.NullString) string {
 		return ns.String
 	}
 	return ""
+}
+
+func encryptUserID(userID string) (string, error) {
+	// .envファイルから秘密鍵を取得
+	key := []byte(os.Getenv("SECRETKEY3"))
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return "", err
+	}
+
+	ciphertext := gcm.Seal(nonce, nonce, []byte(userID), nil)
+	return base64.URLEncoding.EncodeToString(ciphertext), nil
 }
 
 // トークン系関数
@@ -227,6 +301,8 @@ func (u *authUsecase) generateRefreshTokens(email string) (refreshToken string, 
 	return refreshToken, nil
 }
 
+var ErrTokenExpired = errors.New("token is expired")
+
 func (u *authUsecase) decodeToken(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -237,6 +313,14 @@ func (u *authUsecase) decodeToken(tokenString string) (string, error) {
 	})
 
 	if err != nil {
+		var ve *jwt.ValidationError
+		if errors.As(err, &ve) {
+			if ve.Errors&jwt.ValidationErrorExpired != 0 {
+				// トークンが期限切れの場合
+				return "", ErrTokenExpired
+			}
+		}
+		// その他のエラー
 		return "", err
 	}
 

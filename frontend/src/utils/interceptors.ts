@@ -7,14 +7,15 @@ axios.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalConfig = error.config;
+        const errorCode = error.response?.data?.code;
         if (
-            error.response.status === 401 &&
+            errorCode === 'token_expired' &&
             originalConfig.url === '/auth/refresh'
         ) {
             return Promise.reject(error);
         }
 
-        if (error.response.status === 401 && !originalConfig._retry) {
+        if (errorCode === 'token_expired' && !originalConfig._retry) {
             originalConfig._retry = true;
             await axios.get('/auth/refresh');
             return await axios(originalConfig);

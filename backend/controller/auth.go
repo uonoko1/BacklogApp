@@ -2,6 +2,7 @@ package controller
 
 import (
 	"backend/controller/request"
+	"backend/model"
 	"backend/usecase"
 	"fmt"
 	"net/http"
@@ -15,6 +16,7 @@ type AuthController interface {
 	Create(ctx echo.Context) error
 	RefreshAccessToken(ctx echo.Context) error
 	Logout(ctx echo.Context) error
+	FindUserByRefreshToken(ctx echo.Context) (*model.User, error)
 }
 
 type authController struct {
@@ -59,14 +61,26 @@ func (c *authController) AuthByLogin(ctx echo.Context) error {
 func (c *authController) AuthByToken(ctx echo.Context) error {
 	cookie, err := ctx.Cookie("token")
 	if err != nil {
-		return ctx.JSON(http.StatusUnauthorized, "トークンが必要です")
+		return ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"error": "トークンが必要です",
+			"code":  "token_required",
+		})
 	}
 
 	token := cookie.Value
-
 	user, err := c.u.AuthByToken(ctx.Request().Context(), token)
 	if err != nil {
-		return ctx.JSON(http.StatusUnauthorized, err.Error())
+		if err == usecase.ErrTokenExpired {
+			return ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
+				"error": "トークンが期限切れです",
+				"code":  "token_expired",
+			})
+		}
+		// その他の認証エラー
+		return ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"error": err.Error(),
+			"code":  "auth_error",
+		})
 	}
 
 	return ctx.JSON(http.StatusOK, user)
@@ -147,4 +161,26 @@ func (c *authController) Logout(ctx echo.Context) error {
 	})
 
 	return ctx.NoContent(http.StatusOK)
+}
+
+func (c *authController) FindUserByRefreshToken(ctx echo.Context) (*model.User, error) {
+	cookie, err := ctx.Cookie("refresh_token")
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken := cookie.Value
+
+	token, user, err := c.u.ReturnUserAndAccessToken(ctx.Request().Context(), refreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx.SetCookie(&http.Cookie{
+		Name:     "token",
+		Value:    token,
+		HttpOnly: true,
+	})
+
+	return user, nil
 }

@@ -6,14 +6,16 @@ import (
 )
 
 type User struct {
-	ID        string         `json:"id"`
-	UserId    string         `json:"userid"`
-	Username  string         `json:"username"`
-	Email     string         `json:"email"`
-	Password  string         `json:"password"`
-	Desc      sql.NullString `json:"desc"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
+	Id                  string         `json:"id"`
+	UserId              string         `json:"userid"`
+	Username            string         `json:"username"`
+	Email               string         `json:"email"`
+	Password            string         `json:"password"`
+	Description         sql.NullString `json:"description"`
+	CreatedAt           time.Time      `json:"created_at"`
+	UpdatedAt           time.Time      `json:"updated_at"`
+	BacklogRefreshToken sql.NullString `json:"backlog_refreshtoken"`
+	BacklogDomain       sql.NullString `json:"backlog_domain"`
 }
 
 type UserWithToken struct {
@@ -27,4 +29,5 @@ type ResponseUser struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Desc     string `json:"desc"`
+	State    string `json:"state"`
 }

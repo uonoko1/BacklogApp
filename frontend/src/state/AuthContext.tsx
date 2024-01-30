@@ -6,6 +6,7 @@ interface UserType {
     username: string;
     email: string;
     desc: string;
+    state: string,
     backlog: boolean
 }
 
