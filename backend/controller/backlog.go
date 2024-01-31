@@ -75,7 +75,7 @@ func (c *backlogController) GetProjects(ctx echo.Context) error {
 		token = cookie.Value
 	}
 
-	projects, newAccessToken, err := c.u.GetProjects(ctx.Request().Context(), user.UserId, token, backlogDomain, backlogRefreshToken)
+	projects, newAccessToken, err := c.u.GetProjects(ctx.Request().Context(), user.Id, token, backlogDomain, backlogRefreshToken)
 	if err != nil {
 		return ctx.JSON(http.StatusUnauthorized, err.Error())
 	}
