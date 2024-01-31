@@ -44,8 +44,7 @@ jobs:
 
     - name: Create .env file for backend
       run: |
-        DB_INFO_DECODED=$(echo '${{ secrets.DB_INFO }}' | base64 --decode)
-        echo "DB_INFO=${DB_INFO_DECODED}" >> .env
+        echo "DB_INFO=${{ secrets.DB_INFO }}" >> backend/.env
         echo "API_URL=${{ secrets.API_URL }}" >> backend/.env
         echo "SECRETKEY1=${{ secrets.SECRETKEY1 }}" >> backend/.env
         echo "SECRETKEY2=${{ secrets.SECRETKEY2 }}" >> backend/.env
