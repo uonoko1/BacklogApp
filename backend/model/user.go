@@ -2,7 +2,6 @@ package model
 
 import (
 	"database/sql"
-	"time"
 )
 
 type User struct {
@@ -12,8 +11,6 @@ type User struct {
 	Email               string         `json:"email"`
 	Password            string         `json:"password"`
 	Description         sql.NullString `json:"description"`
-	CreatedAt           time.Time      `json:"created_at"`
-	UpdatedAt           time.Time      `json:"updated_at"`
 	BacklogRefreshToken sql.NullString `json:"backlog_refreshtoken"`
 	BacklogDomain       sql.NullString `json:"backlog_domain"`
 }
