@@ -101,7 +101,7 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	bodyString := string(bodyBytes)
 	fmt.Println(bodyString)
 
-	if resp.StatusCode == http.StatusUnauthorized {
+	if resp.StatusCode != http.StatusOK {
 		var err error
 		newToken, err = b.tryRefreshToken(ctx, domain, refreshToken, resp)
 		if err != nil {
@@ -143,7 +143,7 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusUnauthorized {
+	if resp.StatusCode != http.StatusOK {
 		var err error
 		newToken, err := b.tryRefreshToken(ctx, domain, refreshToken, resp)
 		if err != nil {
