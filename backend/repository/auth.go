@@ -25,7 +25,7 @@ func NewAuthRepository(db *sql.DB) AuthRepository {
 	return &authRepository{db}
 }
 
-var userField = "userid, username, email, password, description"
+var userField = "userid, username, email, password, description, backlog_refreshtoken"
 
 func (r *authRepository) FindUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	var user model.User
@@ -43,10 +43,17 @@ func (r *authRepository) FindUserByEmail(ctx context.Context, email string) (*mo
 }
 
 func (r *authRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
+	var execer interface {
+		ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	} = r.db
+
+	if tx, ok := ctx.Value("tx").(*sql.Tx); ok {
+		execer = tx
+	}
+
 	query := `INSERT INTO users (userid, username, email, password) VALUES (?, ?, ?, ?)`
-	_, err := r.db.ExecContext(ctx, query, user.UserId, user.Username, user.Email, user.Password)
+	_, err := execer.ExecContext(ctx, query, user.UserId, user.Username, user.Email, user.Password)
 	if err != nil {
-		fmt.Println("err:", err)
 		return nil, err
 	}
 
@@ -54,20 +61,29 @@ func (r *authRepository) Create(ctx context.Context, user *model.User) (*model.U
 }
 
 func (r *authRepository) CreateRefreshToken(ctx context.Context, UserId, refreshToken string) error {
+	var execer interface {
+		ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	} = r.db
+
+	if tx, ok := ctx.Value("tx").(*sql.Tx); ok {
+		execer = tx
+	}
+
 	query := `INSERT INTO refresh_tokens (userid, refreshtoken) VALUES (?, ?)`
-	_, err := r.db.ExecContext(ctx, query, UserId, refreshToken)
+	_, err := execer.ExecContext(ctx, query, UserId, refreshToken)
 	if err != nil {
 		fmt.Println("err:", err)
 		return err
 	}
+
 	return nil
 }
 
 func (r *authRepository) FindRefreshToken(ctx context.Context, refreshToken string) error {
 	var token model.RefreshToken
-	query := `SELECT id, userid, refreshtoken, created_at FROM refresh_tokens WHERE refreshtoken = ?`
+	query := `SELECT id, userid, refreshtoken FROM refresh_tokens WHERE refreshtoken = ?`
 
-	err := r.db.QueryRowContext(ctx, query, refreshToken).Scan(&token.Id, &token.UserId, &token.RefreshToken, &token.CreatedAt)
+	err := r.db.QueryRowContext(ctx, query, refreshToken).Scan(&token.Id, &token.UserId, &token.RefreshToken)
 	if err != nil {
 		return err
 	}

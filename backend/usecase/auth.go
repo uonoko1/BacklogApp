@@ -15,6 +15,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"io"
 	"os"
 
@@ -60,7 +61,7 @@ func (a *authUsecase) AuthByLogin(ctx context.Context, email, password string) (
 		return nil, fmt.Errorf("failed to encrypt user ID: %w", err)
 	}
 
-	backlogOAuth := !user.BacklogRefreshToken.Valid
+	backlogOAuth := user.BacklogRefreshToken.Valid
 
 	responseUser := &model.ResponseUser{
 		UserId:       user.UserId,
@@ -114,7 +115,7 @@ func (a *authUsecase) AuthByToken(ctx context.Context, token string) (*model.Res
 		return nil, fmt.Errorf("failed to encrypt user ID: %w", err)
 	}
 
-	backlogOAuth := !user.BacklogRefreshToken.Valid
+	backlogOAuth := user.BacklogRefreshToken.Valid
 
 	responseUser := &model.ResponseUser{
 		UserId:       user.UserId,
@@ -129,7 +130,7 @@ func (a *authUsecase) AuthByToken(ctx context.Context, token string) (*model.Res
 }
 
 func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.UserWithToken, error) {
-	result, err := a.transaction.DoInTx(ctx, func(txCtx context.Context) (any, error) {
+	result, err := a.transaction.DoInTx(ctx, func(ctx context.Context) (any, error) {
 		hashedPassword, err := hashPassword(user.Password)
 		if err != nil {
 			return nil, err
@@ -139,10 +140,10 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 			fmt.Println("err:", err)
 			return nil, err
 		}
-		fmt.Println("clear!")
+
 		user.Password = hashedPassword
 
-		createdUser, err := a.r.Create(txCtx, user)
+		createdUser, err := a.r.Create(ctx, user)
 		if err != nil {
 			return nil, err
 		}
@@ -156,7 +157,7 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 			return nil, err
 		}
 
-		err = a.r.CreateRefreshToken(txCtx, createdUser.UserId, refreshToken)
+		err = a.r.CreateRefreshToken(ctx, createdUser.UserId, refreshToken)
 		if err != nil {
 			return nil, err
 		}
@@ -164,7 +165,8 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 		encryptedUserID, err := encryptUserID(createdUser.Id)
 		if err != nil {
 			// encryptUserIDからのエラーを処理
-			return nil, fmt.Errorf("failed to encrypt user ID: %w", err)
+			fmt.Println("failed to encrypt user ID: %w", err)
+			return nil, err
 		}
 
 		return &model.UserWithToken{
@@ -257,25 +259,35 @@ func nullStringToString(ns sql.NullString) string {
 }
 
 func encryptUserID(userID string) (string, error) {
-	// .envファイルから秘密鍵を取得
-	key := []byte(os.Getenv("SECRETKEY3"))
+	// .envファイルから秘密鍵を取得（ヘキサデシマル形式の文字列）
+	hexKey := os.Getenv("SECRETKEY3")
 
-	block, err := aes.NewCipher(key)
+	// ヘキサデシマル文字列をバイト配列にデコード
+	key, err := hex.DecodeString(hexKey)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to decode hex key: %w", err)
 	}
 
+	// AES暗号を初期化
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", fmt.Errorf("failed to create cipher: %w", err)
+	}
+
+	// GCMモードを初期化
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create GCM: %w", err)
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to generate nonce: %w", err)
 	}
 
+	// ユーザーIDを暗号化
 	ciphertext := gcm.Seal(nonce, nonce, []byte(userID), nil)
+	// Base64エンコーディングして返却
 	return base64.URLEncoding.EncodeToString(ciphertext), nil
 }
 

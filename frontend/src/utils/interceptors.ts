@@ -17,7 +17,7 @@ axios.interceptors.response.use(
 
         if (errorCode === 'token_expired' && !originalConfig._retry) {
             originalConfig._retry = true;
-            await axios.get('/auth/refresh');
+            await axios.post('/auth/refresh');
             return await axios(originalConfig);
         }
         return Promise.reject(error);

@@ -7,6 +7,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -227,29 +228,42 @@ func (b *backlogUsecase) refreshAccessToken(ctx context.Context, domain, refresh
 }
 
 func decryptUserID(encryptedUserID string) (string, error) {
-	key := []byte(os.Getenv("SECRETKEY3"))
+	// .envファイルから秘密鍵を取得（ヘキサデシマル形式の文字列）
+	hexKey := os.Getenv("SECRETKEY3")
 
+	// ヘキサデシマル文字列をバイト配列にデコード
+	key, err := hex.DecodeString(hexKey)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode hex key: %w", err)
+	}
+
+	// Base64エンコードされた暗号テキストをデコード
 	ciphertext, err := base64.URLEncoding.DecodeString(encryptedUserID)
 	if err != nil {
 		return "", err
 	}
 
+	// AES暗号を初期化
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return "", err
 	}
 
+	// GCMモードを初期化
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return "", err
 	}
 
+	// ノンスのサイズを確認
 	if len(ciphertext) < gcm.NonceSize() {
 		return "", errors.New("ciphertext too short")
 	}
 
+	// ノンスと暗号テキストを分離
 	nonce, ciphertext := ciphertext[:gcm.NonceSize()], ciphertext[gcm.NonceSize():]
 
+	// 暗号テキストを復号
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
 		return "", err
