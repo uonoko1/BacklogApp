@@ -118,7 +118,7 @@ func (c *backlogController) GetTasks(ctx echo.Context) error {
 		token = cookie.Value
 	}
 
-	tasks, newAccessToken, err := c.u.GetTasks(ctx.Request().Context(), user.UserId, token, backlogDomain, backlogRefreshToken)
+	tasks, newAccessToken, err := c.u.GetTasks(ctx.Request().Context(), user.Id, token, backlogDomain, backlogRefreshToken)
 	if err != nil {
 		return ctx.JSON(http.StatusUnauthorized, err.Error())
 	}

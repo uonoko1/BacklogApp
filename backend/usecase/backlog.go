@@ -98,7 +98,6 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
 		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
 			return nil, "", err
@@ -140,8 +139,7 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		var err error
-		newToken, err := b.refreshAccessToken(ctx, domain, refreshToken)
+		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
 			return nil, "", err
 		}
@@ -158,12 +156,12 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 
 	var tasks []model.Task
 	if err := json.NewDecoder(resp.Body).Decode(&tasks); err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("error decoding projects response: %v", err)
 	}
 
-	if newToken.RefreshToken != "" {
-		if err = b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
-			return nil, "", err
+	if newToken != nil && newToken.RefreshToken != "" {
+		if err := b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
+			return nil, "", fmt.Errorf("failed to update refresh token: %v", err)
 		}
 	}
 
