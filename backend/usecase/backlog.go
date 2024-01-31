@@ -98,8 +98,11 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	defer resp.Body.Close()
 
 	bodyBytes, _ := io.ReadAll(resp.Body)
-	bodyString := string(bodyBytes)
-	fmt.Println(bodyString)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	fmt.Println(string(bodyBytes))
 
 	if resp.StatusCode != http.StatusOK {
 		var err error
@@ -112,6 +115,11 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 			return nil, "", err
 		}
 		defer resp.Body.Close()
+
+		bodyBytes, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, "", fmt.Errorf("failed to read response body after refresh: %v", err)
+		}
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -119,13 +127,13 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	}
 
 	var projects []model.Project
-	if err := json.NewDecoder(resp.Body).Decode(&projects); err != nil {
-		return nil, "", err
+	if err := json.Unmarshal(bodyBytes, &projects); err != nil {
+		return nil, "", fmt.Errorf("error decoding projects response: %v", err)
 	}
 
-	if newToken.RefreshToken != "" {
-		if err = b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
-			return nil, "", err
+	if newToken != nil && newToken.RefreshToken != "" {
+		if err := b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
+			return nil, "", fmt.Errorf("failed to update refresh token: %v", err)
 		}
 	}
 
