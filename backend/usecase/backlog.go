@@ -105,7 +105,7 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	fmt.Println(string(bodyBytes))
 
 	if resp.StatusCode != http.StatusOK {
-		var err error
+		resp.Body.Close()
 		newToken, err = b.tryRefreshToken(ctx, domain, refreshToken, resp)
 		if err != nil {
 			return nil, "", err
