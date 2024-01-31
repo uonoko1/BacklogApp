@@ -97,16 +97,9 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, _ := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, "", fmt.Errorf("failed to read response body: %v", err)
-	}
-
-	fmt.Println(string(bodyBytes))
-
 	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
-		newToken, err = b.tryRefreshToken(ctx, domain, refreshToken, resp)
+		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
 			return nil, "", err
 		}
@@ -115,11 +108,6 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 			return nil, "", err
 		}
 		defer resp.Body.Close()
-
-		bodyBytes, err = io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, "", fmt.Errorf("failed to read response body after refresh: %v", err)
-		}
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -127,7 +115,7 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	}
 
 	var projects []model.Project
-	if err := json.Unmarshal(bodyBytes, &projects); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&projects); err != nil {
 		return nil, "", fmt.Errorf("error decoding projects response: %v", err)
 	}
 
@@ -153,7 +141,7 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 
 	if resp.StatusCode != http.StatusOK {
 		var err error
-		newToken, err := b.tryRefreshToken(ctx, domain, refreshToken, resp)
+		newToken, err := b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
 			return nil, "", err
 		}
@@ -193,18 +181,18 @@ func (b *backlogUsecase) requestBacklogAPI(ctx context.Context, method, url, tok
 	return client.Do(req.WithContext(ctx))
 }
 
-func (b *backlogUsecase) tryRefreshToken(ctx context.Context, domain, refreshToken string, resp *http.Response) (*model.TokenResponse, error) {
-	var errorResponse map[string]string
-	if err := json.NewDecoder(resp.Body).Decode(&errorResponse); err != nil {
-		return nil, fmt.Errorf("error decoding response: %v", err)
-	}
+// func (b *backlogUsecase) tryRefreshToken(ctx context.Context, domain, refreshToken string, resp *http.Response) (*model.TokenResponse, error) {
+// 	var errorResponse map[string]string
+// 	if err := json.NewDecoder(resp.Body).Decode(&errorResponse); err != nil {
+// 		return nil, fmt.Errorf("error decoding response: %v", err)
+// 	}
 
-	if errorDescription, ok := errorResponse["error_description"]; !ok || errorDescription != "The access token expired" {
-		return nil, fmt.Errorf("not an expired token error: %v", errorResponse)
-	}
+// 	if errorDescription, ok := errorResponse["error_description"]; !ok || errorDescription != "The access token expired" {
+// 		return nil, fmt.Errorf("not an expired token error: %v", errorResponse)
+// 	}
 
-	return b.refreshAccessToken(ctx, domain, refreshToken)
-}
+// 	return b.refreshAccessToken(ctx, domain, refreshToken)
+// }
 
 func (b *backlogUsecase) refreshAccessToken(ctx context.Context, domain, refreshToken string) (*model.TokenResponse, error) {
 	tokenURL := fmt.Sprintf("https://%s/api/v2/oauth2/token", domain)
