@@ -8,6 +8,7 @@ import (
 	"backend/routes"
 	"backend/transaction"
 	"backend/usecase"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -41,6 +42,10 @@ func main() {
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 		AllowCredentials: true,
 	}))
+
+	fmt.Println("SECRETKEY1", os.Getenv("SECRETKEY1"))
+	fmt.Println("SECRETKEY2", os.Getenv("SECRETKEY2"))
+	fmt.Println("SECRETKEY3", os.Getenv("SECRETKEY3"))
 
 	e.Validator = &CustomerValidator{validator: validator.New()}
 
