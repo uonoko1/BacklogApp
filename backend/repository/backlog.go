@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"strconv"
 )
 
 type BacklogRepository interface {
@@ -18,8 +19,13 @@ func NewBacklogRepository(db *sql.DB) BacklogRepository {
 }
 
 func (r *backlogRepository) AddBacklogRefreshToken(ctx context.Context, id, refreshToken, domain string) error {
+	ID, err := strconv.Atoi(id)
+	if err != nil {
+		return err
+	}
+
 	query := `UPDATE users SET backlog_refreshtoken = ?, backlog_domain = ? WHERE id = ?`
-	_, err := r.db.ExecContext(ctx, query, refreshToken, domain, id)
+	_, err = r.db.ExecContext(ctx, query, refreshToken, domain, ID)
 	if err != nil {
 		return err
 	}
