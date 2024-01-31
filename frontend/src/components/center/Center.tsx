@@ -34,10 +34,10 @@ export default function Center() {
             try {
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/${path}`);
                 if (path === 'projects') {
-                    console.log("projects:", projects);
+                    console.log("projects:", response.data);
                     setProjects(response.data);
                 } else if (path === 'tasks') {
-                    console.log("tasks:", tasks);
+                    console.log("tasks:", response.data);
                     setTasks(response.data);
                 }
             } catch (err) {
