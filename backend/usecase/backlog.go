@@ -99,7 +99,7 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		var err error
-		newToken, err := b.tryRefreshToken(ctx, domain, refreshToken, resp)
+		newToken, err = b.tryRefreshToken(ctx, domain, refreshToken, resp)
 		if err != nil {
 			return nil, "", err
 		}
