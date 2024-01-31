@@ -114,6 +114,10 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 		return nil, "", fmt.Errorf("failed to get projects, status code: %d", resp.StatusCode)
 	}
 
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	bodyString := string(bodyBytes)
+	fmt.Println(bodyString)
+
 	var projects []model.Project
 	if err := json.NewDecoder(resp.Body).Decode(&projects); err != nil {
 		return nil, "", err
