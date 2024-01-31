@@ -45,7 +45,7 @@ export default function Center() {
             }
         }
         if ((path === 'projects' || path === 'tasks') && (user && user.backlog_oauth)) fetchBacklogData();
-    }, [path])
+    }, [path, user])
 
     return (
         <div className={`Center ${!user?.backlog_oauth && (path === 'projects' || path === 'tasks') ? 'AuthCenter' : ''}`}>

@@ -6,6 +6,7 @@ import (
 	"backend/usecase"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo"
 )
@@ -46,13 +47,17 @@ func (c *authController) AuthByLogin(ctx echo.Context) error {
 	ctx.SetCookie(&http.Cookie{
 		Name:     "token",
 		Value:    userWithToken.AccessToken,
+		Path:     "/api",
 		HttpOnly: true,
+		Expires:  time.Now().AddDate(0, 3, 0),
 	})
 
 	ctx.SetCookie(&http.Cookie{
 		Name:     "refresh_token",
 		Value:    userWithToken.RefreshToken,
+		Path:     "/api",
 		HttpOnly: true,
+		Expires:  time.Now().AddDate(0, 3, 0),
 	})
 
 	return ctx.JSON(http.StatusOK, userWithToken.User)
@@ -104,13 +109,17 @@ func (c *authController) Create(ctx echo.Context) error {
 	ctx.SetCookie(&http.Cookie{
 		Name:     "token",
 		Value:    userWithToken.AccessToken,
+		Path:     "/api",
 		HttpOnly: true,
+		Expires:  time.Now().AddDate(0, 3, 0),
 	})
 
 	ctx.SetCookie(&http.Cookie{
 		Name:     "refresh_token",
 		Value:    userWithToken.RefreshToken,
+		Path:     "/api",
 		HttpOnly: true,
+		Expires:  time.Now().AddDate(0, 3, 0),
 	})
 
 	return ctx.JSON(http.StatusOK, userWithToken.User)
@@ -132,7 +141,9 @@ func (c *authController) RefreshAccessToken(ctx echo.Context) error {
 	ctx.SetCookie(&http.Cookie{
 		Name:     "token",
 		Value:    token,
+		Path:     "/api",
 		HttpOnly: true,
+		Expires:  time.Now().AddDate(0, 3, 0),
 	})
 
 	return nil
@@ -150,12 +161,14 @@ func (c *authController) Logout(ctx echo.Context) error {
 	ctx.SetCookie(&http.Cookie{
 		Name:     "token",
 		Value:    "",
+		Path:     "/api",
 		HttpOnly: true,
 		MaxAge:   -1,
 	})
 	ctx.SetCookie(&http.Cookie{
 		Name:     "refresh_token",
 		Value:    "",
+		Path:     "/api",
 		HttpOnly: true,
 		MaxAge:   -1,
 	})
@@ -179,7 +192,9 @@ func (c *authController) FindUserByRefreshToken(ctx echo.Context) (*model.User, 
 	ctx.SetCookie(&http.Cookie{
 		Name:     "token",
 		Value:    token,
+		Path:     "/api",
 		HttpOnly: true,
+		Expires:  time.Now().AddDate(0, 3, 0),
 	})
 
 	return user, nil
