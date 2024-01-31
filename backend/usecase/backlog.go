@@ -97,6 +97,10 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	}
 	defer resp.Body.Close()
 
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	bodyString := string(bodyBytes)
+	fmt.Println(bodyString)
+
 	if resp.StatusCode == http.StatusUnauthorized {
 		var err error
 		newToken, err = b.tryRefreshToken(ctx, domain, refreshToken, resp)
@@ -113,10 +117,6 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	if resp.StatusCode != http.StatusOK {
 		return nil, "", fmt.Errorf("failed to get projects, status code: %d", resp.StatusCode)
 	}
-
-	bodyBytes, _ := io.ReadAll(resp.Body)
-	bodyString := string(bodyBytes)
-	fmt.Println(bodyString)
 
 	var projects []model.Project
 	if err := json.NewDecoder(resp.Body).Decode(&projects); err != nil {
