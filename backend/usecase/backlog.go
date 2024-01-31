@@ -114,6 +114,8 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 		return nil, "", fmt.Errorf("failed to get projects, status code: %d", resp.StatusCode)
 	}
 
+	fmt.Println("projects:", resp.Body)
+
 	var projects []model.Project
 	if err := json.NewDecoder(resp.Body).Decode(&projects); err != nil {
 		return nil, "", fmt.Errorf("error decoding projects response: %v", err)
@@ -157,6 +159,8 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 	if resp.StatusCode != http.StatusOK {
 		return nil, "", fmt.Errorf("failed to get tasks, status code: %d", resp.StatusCode)
 	}
+
+	fmt.Println("tasks:", resp.Body)
 
 	var tasks []model.Task
 	if err := json.NewDecoder(resp.Body).Decode(&tasks); err != nil {

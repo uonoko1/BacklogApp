@@ -47,9 +47,11 @@ export default function Center() {
         if ((path === 'projects' || path === 'tasks') && (user && user.backlog_oauth)) fetchBacklogData();
     }, [path, user])
 
+    const backlogOAuth = (!user?.backlog_oauth) && (path === 'projects' || path === 'tasks')
+
     return (
-        <div className={`Center ${!user?.backlog_oauth && (path === 'projects' || path === 'tasks') ? 'AuthCenter' : ''}`}>
-            {path === 'projects' || path === 'tasks' ?
+        <div className={`Center ${backlogOAuth ? 'AuthCenter' : ''}`}>
+            {backlogOAuth ?
                 <>
                     <div className="BacklogOAuthDialog">
                         <h2>この機能はBacklog認証が必要です。</h2>
