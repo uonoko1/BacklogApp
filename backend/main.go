@@ -46,6 +46,9 @@ func main() {
 	fmt.Println("SECRETKEY1", os.Getenv("SECRETKEY1"))
 	fmt.Println("SECRETKEY2", os.Getenv("SECRETKEY2"))
 	fmt.Println("SECRETKEY3", os.Getenv("SECRETKEY3"))
+	fmt.Println("BACKLOG_CLIENT_ID", os.Getenv("BACKLOG_CLIENT_ID"))
+	fmt.Println("BACKLOG_CLIENT_SECRET", os.Getenv("BACKLOG_CLIENT_SECRET"))
+	fmt.Println("BACKLOG_REDIRECT_URI", os.Getenv("BACKLOG_REDIRECT_URI"))
 
 	e.Validator = &CustomerValidator{validator: validator.New()}
 
