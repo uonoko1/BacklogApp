@@ -48,9 +48,7 @@ func (c *backlogController) OAuthCallback(ctx echo.Context) error {
 		Expires:  time.Now().Add(24 * time.Hour),
 	})
 
-	return ctx.JSON(http.StatusOK, map[string]string{
-		"message": "認証成功",
-	})
+	return ctx.Redirect(http.StatusFound, "https://backlog.daichisakai.net")
 }
 
 func (c *backlogController) GetProjects(ctx echo.Context) error {

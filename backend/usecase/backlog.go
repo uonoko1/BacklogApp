@@ -40,7 +40,7 @@ func (b *backlogUsecase) GetAccessTokenWithCode(ctx context.Context, code string
 	}
 	domain := parts[1]
 	encryptedUserID := parts[0]
-	fmt.Println("state:", encryptedUserID)
+
 	userID, err := decryptUserID(encryptedUserID)
 	if err != nil {
 		return "", err
