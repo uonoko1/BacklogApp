@@ -3,6 +3,7 @@ package controller
 import (
 	"backend/model"
 	"backend/usecase"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -53,6 +54,7 @@ func (c *backlogController) OAuthCallback(ctx echo.Context) error {
 
 func (c *backlogController) GetProjects(ctx echo.Context) error {
 	tempUser := ctx.Get("user")
+	fmt.Println("tempUser:", tempUser)
 	user, ok := tempUser.(*model.User)
 	if !ok {
 		return ctx.JSON(http.StatusInternalServerError, "ユーザー情報の取得に失敗しました")
