@@ -25,7 +25,7 @@ import (
 
 type AuthUsecase interface {
 	AuthByLogin(ctx context.Context, email, password string) (*model.UserWithToken, error)
-	AuthByToken(ctx context.Context, token string) (*model.ResponseUser, error)
+	AuthByToken(ctx context.Context, token string) (*model.User, error)
 	Create(ctx context.Context, user *model.User) (*model.UserWithToken, error)
 	RefreshAccessToken(ctx context.Context, refreshToken string) (string, error)
 	CreateRefreshToken(ctx context.Context, userId, refreshToken string) error
@@ -55,9 +55,9 @@ func (a *authUsecase) AuthByLogin(ctx context.Context, email, password string) (
 		return nil, err
 	}
 
-	encryptedUserID, err := encryptUserID(user.Id)
+	encryptedUserID, err := EncryptUserID(user.Id)
 	if err != nil {
-		// encryptUserIDからのエラーを処理
+		// EncryptUserIDからのエラーを処理
 		return nil, fmt.Errorf("failed to encrypt user ID: %w", err)
 	}
 
@@ -67,7 +67,7 @@ func (a *authUsecase) AuthByLogin(ctx context.Context, email, password string) (
 		UserId:       user.UserId,
 		Username:     user.Username,
 		Email:        user.Email,
-		Desc:         nullStringToString(user.Description),
+		Desc:         NullStringToString(user.Description),
 		State:        encryptedUserID,
 		BacklogOAuth: backlogOAuth,
 	}
@@ -97,7 +97,7 @@ func (a *authUsecase) AuthByLogin(ctx context.Context, email, password string) (
 	}, nil
 }
 
-func (a *authUsecase) AuthByToken(ctx context.Context, token string) (*model.ResponseUser, error) {
+func (a *authUsecase) AuthByToken(ctx context.Context, token string) (*model.User, error) {
 	email, err := a.decodeToken(token)
 	if err != nil {
 		return nil, err
@@ -109,24 +109,7 @@ func (a *authUsecase) AuthByToken(ctx context.Context, token string) (*model.Res
 		return nil, err
 	}
 
-	encryptedUserID, err := encryptUserID(user.Id)
-	if err != nil {
-		// encryptUserIDからのエラーを処理
-		return nil, fmt.Errorf("failed to encrypt user ID: %w", err)
-	}
-
-	backlogOAuth := user.BacklogRefreshToken.Valid
-
-	responseUser := &model.ResponseUser{
-		UserId:       user.UserId,
-		Username:     user.Username,
-		Email:        user.Email,
-		Desc:         nullStringToString(user.Description),
-		State:        encryptedUserID,
-		BacklogOAuth: backlogOAuth,
-	}
-
-	return responseUser, nil
+	return user, nil
 }
 
 func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.UserWithToken, error) {
@@ -162,9 +145,9 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 			return nil, err
 		}
 
-		encryptedUserID, err := encryptUserID(createdUser.Id)
+		encryptedUserID, err := EncryptUserID(createdUser.Id)
 		if err != nil {
-			// encryptUserIDからのエラーを処理
+			// EncryptUserIDからのエラーを処理
 			fmt.Println("failed to encrypt user ID: %w", err)
 			return nil, err
 		}
@@ -174,7 +157,7 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 				UserId:       createdUser.UserId,
 				Username:     createdUser.Username,
 				Email:        createdUser.Email,
-				Desc:         nullStringToString(user.Description),
+				Desc:         NullStringToString(user.Description),
 				State:        encryptedUserID,
 				BacklogOAuth: false,
 			},
@@ -251,14 +234,14 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func nullStringToString(ns sql.NullString) string {
+func NullStringToString(ns sql.NullString) string {
 	if ns.Valid {
 		return ns.String
 	}
 	return ""
 }
 
-func encryptUserID(userID string) (string, error) {
+func EncryptUserID(userID string) (string, error) {
 	// .envファイルから秘密鍵を取得（ヘキサデシマル形式の文字列）
 	hexKey := os.Getenv("SECRETKEY3")
 

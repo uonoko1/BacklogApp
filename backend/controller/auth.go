@@ -88,7 +88,22 @@ func (c *authController) AuthByToken(ctx echo.Context) error {
 		})
 	}
 
-	return ctx.JSON(http.StatusOK, user)
+	backlogOAuth := user.BacklogRefreshToken.Valid
+	encryptedUserID, err := usecase.EncryptUserID(user.Id)
+	if err != nil {
+		return err
+	}
+
+	responseUser := &model.ResponseUser{
+		UserId:       user.UserId,
+		Username:     user.Username,
+		Email:        user.Email,
+		Desc:         usecase.NullStringToString(user.Description),
+		State:        encryptedUserID,
+		BacklogOAuth: backlogOAuth,
+	}
+
+	return ctx.JSON(http.StatusOK, responseUser)
 }
 
 func (c *authController) Create(ctx echo.Context) error {
