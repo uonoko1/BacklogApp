@@ -58,6 +58,11 @@ jobs:
         cd backend
         go build -o build main.go
 
+    # Transfer .env file to production server
+    - name: Transfer .env file to production backend
+      run: |
+        scp -i deploy_key.pem backend/.env ${{ secrets.USER }}@${{ secrets.HOST }}:/home/githubactions/BacklogApp/backend/
+
     # Application stop
     - name: Stop the backend application
       run: |
