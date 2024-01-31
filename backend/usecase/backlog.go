@@ -123,9 +123,11 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 		if err := b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
 			return nil, "", fmt.Errorf("failed to update refresh token: %v", err)
 		}
+
+		return projects, newToken.AccessToken, nil
 	}
 
-	return projects, newToken.AccessToken, nil
+	return projects, "", nil
 }
 
 func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, refreshToken string) ([]model.Task, string, error) {
@@ -165,9 +167,11 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 		if err := b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
 			return nil, "", fmt.Errorf("failed to update refresh token: %v", err)
 		}
+
+		return tasks, newToken.AccessToken, nil
 	}
 
-	return tasks, newToken.AccessToken, nil
+	return tasks, "", nil
 }
 
 func (b *backlogUsecase) requestBacklogAPI(ctx context.Context, method, url, token string, body io.Reader) (*http.Response, error) {
