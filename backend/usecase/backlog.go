@@ -98,6 +98,7 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
 		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
 			return nil, "", err
@@ -139,6 +140,7 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
 		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
 			return nil, "", err
