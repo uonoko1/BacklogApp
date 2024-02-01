@@ -1,0 +1,86 @@
+.projectsContent {
+    height: calc(100% - 47px);
+}
+
+.Favorite {
+    height: 30%;
+}
+
+.SearchResult {
+    height: 60%;
+}
+
+.Favorite ul {
+    max-height: calc(100% - 70px);
+}
+
+.SearchResult ul {
+    max-height: calc(100% - 70px);
+}
+
+.projectsContent ul {
+    padding: 0;
+    margin: 0;
+    border-radius: 0 0 4px 4px;
+    border: 1px solid #c2c2c2;
+    border-top: 0;
+    overflow-y: scroll;
+}
+
+
+.projectItem,
+.projectsContent li {
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.projectItem {
+    display: flex;
+    align-items: center;
+    background-color: #f6f6f6;
+    border-radius: 4px 4px 0 0;
+    border-bottom: 1px solid #bdbdbd;
+    color: #00836b;
+    padding-left: 20px;
+    border: 1px solid #c2c2c2;
+}
+
+.Favorite div {
+    padding-left: 31px;
+}
+
+.projectsContent li {
+    display: flex;
+    align-items: center;
+    border-radius: 0 0 4px 4px;
+    background-color: #ffffff;
+    border-top: 1px solid #c2c2c2;
+}
+
+.projectId {
+    flex: 3;
+    text-align: center;
+    cursor: pointer;
+    color: #00836b;
+}
+
+.projectName {
+    flex: 6;
+    text-align: center;
+    cursor: pointer;
+}
+
+.projectKey {
+    flex: 3;
+    text-align: center;
+    cursor: pointer;
+}
+
+.deleteIcon {
+    color: gray;
+}
+
+.Favorite,
+.SearchResult {
+    margin-top: 1rem;
+}

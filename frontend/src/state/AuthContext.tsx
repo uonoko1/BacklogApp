@@ -1,14 +1,6 @@
-import axios from "axios";
-import React, { createContext, useContext, useState, Dispatch, SetStateAction, useEffect } from "react";
-
-interface UserType {
-    userId: string;
-    username: string;
-    email: string;
-    desc: string;
-    state: string,
-    backlog_oauth: boolean
-}
+import axios from 'axios';
+import React, { createContext, useContext, useState, Dispatch, SetStateAction, useEffect } from 'react';
+import { UserType } from '../types/User';
 
 interface AuthContextType {
     user: UserType | null;

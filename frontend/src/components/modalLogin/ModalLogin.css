@@ -103,3 +103,10 @@
     border-radius: 10px;
     margin-top: 1.5rem;
 }
+
+.TailSpinContent {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

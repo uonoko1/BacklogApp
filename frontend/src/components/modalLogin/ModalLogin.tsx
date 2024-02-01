@@ -84,7 +84,9 @@ export default function ModalLogin() {
                         <button type='button' className='link' onClick={() => setShowRegister(true)}>アカウント登録はこちら</button>
                     }
                     {isLoading ?
-                        <TailSpin color='#00BFFF' height={30} width={30} />
+                        <div className='TailSpinContent'>
+                            <TailSpin color='#00BFFF' height={30} width={30} />
+                        </div>
                         :
                         (
                             showRegister ?

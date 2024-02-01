@@ -48,14 +48,18 @@ func main() {
 	transaction := transaction.NewTransaction(db)
 	ar := repository.NewAuthRepository(db)
 	br := repository.NewBacklogRepository(db)
+	fr := repository.NewFavRepository(db)
 	au := usecase.NewAuthUsecase(ar, transaction)
 	bu := usecase.NewBacklogUsecase(br)
+	fu := usecase.NewFavUsecase(fr)
 	ac := controller.NewAuthController(au)
 	bc := controller.NewBacklogController(bu)
+	fc := controller.NewFavController(fu)
 	am := middleware.AuthMiddleware(au)
 
 	routes.AuthRoutes(e, ac)
 	routes.BacklogRoutes(e, bc, am)
+	routes.FavRoutes(e, fc, am)
 
 	e.Start("localhost:5020")
 }
