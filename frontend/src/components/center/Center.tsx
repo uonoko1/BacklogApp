@@ -459,22 +459,23 @@ export default function Center() {
     }, [path, user]);
 
     useEffect(() => {
-        if ((projects && projects.length === 0) || (favoriteProjectList && favoriteProjectList.length === 0)) return;
+        if (!projects || projects.length === 0 || !favoriteProjectList || favoriteProjectList.length === 0) return;
 
         const favoriteProjectsDetails: Project[] = projects.filter(project =>
-            favoriteProjectList.some(favProject => favProject.projectID === project.id)
+            Array.isArray(favoriteProjectList) && favoriteProjectList.some(favProject => favProject.projectID === project.id)
         );
         setFavoriteProjects(favoriteProjectsDetails);
-    }, [projects, favoriteProjectList])
+    }, [projects, favoriteProjectList]);
 
     useEffect(() => {
-        if ((tasks && tasks.length === 0) || (favoriteTaskList && favoriteTaskList.length === 0)) return;
+        if (!tasks || tasks.length === 0 || !favoriteTaskList || favoriteTaskList.length === 0) return;
 
         const favoriteTasksDetails: Task[] = tasks.filter(task =>
-            favoriteTaskList.some(favtask => favtask.taskID === task.id)
+            Array.isArray(favoriteTaskList) && favoriteTaskList.some(favTask => favTask.taskID === task.id)
         );
         setFavoriteTasks(favoriteTasksDetails);
-    }, [tasks, favoriteTaskList])
+    }, [tasks, favoriteTaskList]);
+
 
     const backlogOAuth = (!user?.backlog_oauth) && (path === 'projects' || path === 'tasks')
     // const backlogOAuth = ""
