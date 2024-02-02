@@ -464,7 +464,7 @@ export default function Center() {
         console.log("お気に入りプロジェクト:", favoriteProjectList);
 
         const favoriteProjectsDetails: Project[] = projects.filter(project =>
-            Array.isArray(favoriteProjectList) && favoriteProjectList.some(favProject => favProject.projectID === project.id)
+            Array.isArray(favoriteProjectList) && favoriteProjectList.some(favProject => favProject.project_id === project.id)
         );
         console.log("favoriteProjectsDetails:", favoriteProjectsDetails)
         setFavoriteProjects(favoriteProjectsDetails);
@@ -476,7 +476,7 @@ export default function Center() {
         console.log("お気に入り課題:", favoriteTaskList);
 
         const favoriteTasksDetails: Task[] = tasks.filter(task =>
-            Array.isArray(favoriteTaskList) && favoriteTaskList.some(favTask => favTask.taskID === task.id)
+            Array.isArray(favoriteTaskList) && favoriteTaskList.some(favTask => favTask.task_id === task.id)
         );
         console.log("favoriteTasksDetails:", favoriteTasksDetails)
         setFavoriteTasks(favoriteTasksDetails);

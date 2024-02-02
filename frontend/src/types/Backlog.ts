@@ -132,11 +132,11 @@ export interface Project {
 }
 
 export interface FavoriteProject {
-    projectID: number;
-    createdAt: string;
+    project_id: number;
+    created_at: string;
 }
 
 export interface FavoriteTask {
-    taskID: number;
-    createdAt: string;
+    task_id: number;
+    created_at: string;
 }
