@@ -7,6 +7,7 @@ import axios from 'axios';
 import Tasks from '../tasks/Tasks';
 import Projects from '../projects/Projects';
 import { FavoriteProject, FavoriteTask, Project, Task } from '../../types/Backlog';
+import { useNavigate } from 'react-router-dom';
 
 export default function Center() {
     const { path } = usePath();
@@ -24,6 +25,7 @@ export default function Center() {
     const [favoriteTaskList, setFavoriteTaskList] = useState<FavoriteTask[]>([]);
     const [favoriteTasks, setFavoriteTasks] = useState<Task[]>([]);
     const [checkedTaskStates, setCheckedTaskStates] = useState<{ [key: number]: boolean }>({});
+    const navigate = useNavigate();
 
     const redirectToBacklogAuth = async () => {
         if (!fullSpaceUrl) return;
@@ -143,6 +145,12 @@ export default function Center() {
         }
     };
 
+    const handleClickProject = (id: number) => {
+        const filterTasks = tasks.filter((task) => task.projectId === id)
+        setDisplayTasks(filterTasks);
+        navigate('/tasks')
+    }
+
     return (
         <div className={`Center ${backlogOAuth ? 'AuthCenter' : ''}`}>
             {backlogOAuth ?
@@ -176,6 +184,7 @@ export default function Center() {
                             setCheckedStates={setCheckedProjectStates}
                             favoriteList={favoriteProjectList}
                             setFavoriteList={setFavoriteProjectList}
+                            handleClickProject={handleClickProject}
                         />
                     )}
                     {path === 'tasks' && (

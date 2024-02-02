@@ -11,9 +11,10 @@ interface ProjectsProps {
     setCheckedStates: React.Dispatch<React.SetStateAction<{ [key: number]: boolean }>>;
     favoriteList: FavoriteProject[];
     setFavoriteList: React.Dispatch<React.SetStateAction<FavoriteProject[]>>;
+    handleClickProject: (id: number) => void;
 }
 
-export default function Projects({ projects, favoriteProjects, checkedStates, setCheckedStates, favoriteList, setFavoriteList }: ProjectsProps) {
+export default function Projects({ projects, favoriteProjects, checkedStates, setCheckedStates, favoriteList, setFavoriteList, handleClickProject }: ProjectsProps) {
 
     const handleCheckBox = async (id: number) => {
         const newState = !checkedStates[id];
@@ -53,7 +54,7 @@ export default function Projects({ projects, favoriteProjects, checkedStates, se
                 <ul>
                     {favoriteProjects.map((project) => {
                         return (
-                            <li key={project.id}>
+                            <li key={project.id} onClick={() => handleClickProject(project.id)}>
                                 <HighlightOffIcon className='deleteIcon' onClick={() => handleCheckBox(project.id)} />
                                 <p className='projectId'>{project.id}</p>
                                 <p className='projectKey'>{project.projectKey}</p>
@@ -73,7 +74,7 @@ export default function Projects({ projects, favoriteProjects, checkedStates, se
                 <ul>
                     {projects.map((project) => {
                         return (
-                            <li key={project.id}>
+                            <li key={project.id} onClick={() => handleClickProject(project.id)}>
                                 <input
                                     type="checkbox"
                                     checked={!!checkedStates[project.id]}
