@@ -15,10 +15,12 @@ export default function Center() {
     const [fullSpaceUrl, setFullSpaceUrl] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [projects, setProjects] = useState<Project[]>([]);
+    const [displayProjects, setDisplayProjects] = useState<Project[]>([]);
     const [favoriteProjectList, setFavoriteProjectList] = useState<FavoriteProject[]>([]);
     const [favoriteProjects, setFavoriteProjects] = useState<Project[]>([]);
     const [checkedProjectStates, setCheckedProjectStates] = useState<{ [key: number]: boolean }>({});
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [displayTasks, setDisplayTasks] = useState<Task[]>([]);
     const [favoriteTaskList, setFavoriteTaskList] = useState<FavoriteTask[]>([]);
     const [favoriteTasks, setFavoriteTasks] = useState<Task[]>([]);
     const [checkedTaskStates, setCheckedTaskStates] = useState<{ [key: number]: boolean }>({});
@@ -45,9 +47,11 @@ export default function Center() {
                 const favResponse = await axios.get(`${process.env.REACT_APP_API_URL}/api/fav/${endpoint}`)
                 if (path === 'projects') {
                     setProjects(response.data);
+                    setDisplayProjects(response.data);
                     setFavoriteProjectList(favResponse.data)
                 } else if (path === 'tasks') {
                     setTasks(response.data);
+                    setDisplayTasks(response.data);
                     setFavoriteTaskList(favResponse.data)
                 }
             } catch (err) {
@@ -127,11 +131,11 @@ export default function Center() {
 
         if (path === 'projects') {
             const filterProjects = projects.filter((project) => project.name.includes(value));
-            setProjects(filterProjects);
+            setDisplayProjects(filterProjects);
         }
         if (path === 'tasks') {
             const filtertasks = tasks.filter((task) => task.summary.includes(value));
-            setTasks(filtertasks);
+            setDisplayTasks(filtertasks);
         }
     }
 
@@ -162,7 +166,7 @@ export default function Center() {
                     </div>
                     {path === 'projects' && (
                         <Projects
-                            projects={projects}
+                            projects={displayProjects}
                             favoriteProjects={favoriteProjects}
                             checkedStates={checkedProjectStates}
                             setCheckedStates={setCheckedProjectStates}
@@ -172,7 +176,7 @@ export default function Center() {
                     )}
                     {path === 'tasks' && (
                         <Tasks
-                            tasks={tasks}
+                            tasks={displayTasks}
                             favoriteTasks={favoriteTasks}
                             sortedByDate={sortByLatestDate}
                             checkedStates={checkedTaskStates}
