@@ -63,7 +63,7 @@ export default function Center() {
     }, [path, user]);
 
     useEffect(() => {
-        if (!projects || projects.length === 0 || !favoriteProjectList || favoriteProjectList.length === 0) return;
+        if (!projects || projects.length === 0 || !favoriteProjectList) return;
 
         const favoriteProjectsDetails: Project[] = projects.filter(project =>
             Array.isArray(favoriteProjectList) && favoriteProjectList.some(favProject => favProject.project_id === project.id)
@@ -72,7 +72,7 @@ export default function Center() {
     }, [projects, favoriteProjectList]);
 
     useEffect(() => {
-        if (!tasks || tasks.length === 0 || !favoriteTaskList || favoriteTaskList.length === 0) return;
+        if (!tasks || tasks.length === 0 || !favoriteTaskList) return;
 
 
         const favoriteTasksDetails: Task[] = tasks.filter(task =>
