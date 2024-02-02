@@ -1,26 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import './Projects.css'
-import { Project } from '../../types/Backlog'
+import { FavoriteProject, Project } from '../../types/Backlog'
 import axios from 'axios';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 
 interface ProjectsProps {
     projects: Project[];
     favoriteProjects: Project[];
+    checkedStates: { [key: number]: boolean };
+    setCheckedStates: React.Dispatch<React.SetStateAction<{ [key: number]: boolean }>>;
+    favoriteList: FavoriteProject[];
+    setFavoriteList: React.Dispatch<React.SetStateAction<FavoriteProject[]>>;
 }
 
-export default function Projects({ projects, favoriteProjects }: ProjectsProps) {
-    const [checkedStates, setCheckedStates] = useState<{ [key: number]: boolean }>({});
-
-    useEffect(() => {
-        const updatedCheckedStates = projects.reduce((acc, project) => {
-            const isFavorite = favoriteProjects.some(favProject => favProject.id === project.id);
-            acc[project.id] = isFavorite;
-            return acc;
-        }, {} as { [key: number]: boolean });
-
-        setCheckedStates(updatedCheckedStates);
-    }, [projects, favoriteProjects]);
+export default function Projects({ projects, favoriteProjects, checkedStates, setCheckedStates, favoriteList, setFavoriteList }: ProjectsProps) {
 
     const handleCheckBox = async (id: number) => {
         const newState = !checkedStates[id];
@@ -32,8 +25,12 @@ export default function Projects({ projects, favoriteProjects }: ProjectsProps) 
         try {
             if (newState) {
                 await axios.post(`${process.env.REACT_APP_API_URL}/api/fav/project/${id}`);
+                const newFavoriteList = { project_id: id, created_at: new Date().toISOString() };
+                setFavoriteList([...favoriteList, newFavoriteList]);
             } else {
                 await axios.delete(`${process.env.REACT_APP_API_URL}/api/fav/project/${id}`);
+                const updatedFavoriteList = favoriteList.filter(favProject => favProject.project_id !== id);
+                setFavoriteList(updatedFavoriteList);
             }
         } catch (err) {
             setCheckedStates({

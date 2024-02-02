@@ -15,11 +15,13 @@ export default function Center() {
     const [fullSpaceUrl, setFullSpaceUrl] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [projects, setProjects] = useState<Project[]>([]);
-    const [favoriteProjectList, setFavoriteProjectsList] = useState<FavoriteProject[]>([]);
+    const [favoriteProjectList, setFavoriteProjectList] = useState<FavoriteProject[]>([]);
     const [favoriteProjects, setFavoriteProjects] = useState<Project[]>([]);
+    const [checkedProjectStates, setCheckedProjectStates] = useState<{ [key: number]: boolean }>({});
     const [tasks, setTasks] = useState<Task[]>([]);
     const [favoriteTaskList, setFavoriteTaskList] = useState<FavoriteTask[]>([]);
     const [favoriteTasks, setFavoriteTasks] = useState<Task[]>([]);
+    const [checkedTaskStates, setCheckedTaskStates] = useState<{ [key: number]: boolean }>({});
 
     const redirectToBacklogAuth = async () => {
         if (!fullSpaceUrl) return;
@@ -43,7 +45,7 @@ export default function Center() {
                 const favResponse = await axios.get(`${process.env.REACT_APP_API_URL}/api/fav/${endpoint}`)
                 if (path === 'projects') {
                     setProjects(response.data);
-                    setFavoriteProjectsList(favResponse.data)
+                    setFavoriteProjectList(favResponse.data)
                 } else if (path === 'tasks') {
                     setTasks(response.data);
                     setFavoriteTaskList(favResponse.data)
@@ -79,6 +81,28 @@ export default function Center() {
         setFavoriteTasks(favoriteTasksDetails);
     }, [tasks, favoriteTaskList]);
 
+    useEffect(() => {
+        if (!projects || projects.length === 0 || !favoriteProjects || favoriteProjects.length === 0) return;
+        const updatedCheckedStates = projects.reduce((acc, project) => {
+            const isFavorite = favoriteProjects.some(favProject => favProject.id === project.id);
+            acc[project.id] = isFavorite;
+            return acc;
+        }, {} as { [key: number]: boolean });
+
+        setCheckedProjectStates(updatedCheckedStates);
+    }, [projects, favoriteProjects]);
+
+    useEffect(() => {
+        if (!tasks || tasks.length === 0 || !favoriteTasks || favoriteTasks.length === 0) return;
+        const updatedCheckedStates = tasks.reduce((acc, task) => {
+            const isTask = favoriteTasks.some(favTask => favTask.id === task.id);
+            acc[task.id] = isTask;
+            return acc;
+        }, {} as { [key: number]: boolean });
+
+        setCheckedTaskStates(updatedCheckedStates);
+    }, [tasks, favoriteTasks]);
+
     function sortByLatestDate(a: Task, b: Task) {
         const dateA = new Date(a.updated || a.created);
         const dateB = new Date(b.updated || b.created);
@@ -112,8 +136,27 @@ export default function Center() {
                         <SearchIcon />
                         <input type='text' value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className='SearchBoxInput' />
                     </div>
-                    {path === 'projects' && <Projects projects={projects} favoriteProjects={favoriteProjects} />}
-                    {path === 'tasks' && <Tasks tasks={tasks} favoriteTasks={favoriteTasks} sortedByDate={sortByLatestDate} />}
+                    {path === 'projects' && (
+                        <Projects
+                            projects={projects}
+                            favoriteProjects={favoriteProjects}
+                            checkedStates={checkedProjectStates}
+                            setCheckedStates={setCheckedProjectStates}
+                            favoriteList={favoriteProjectList}
+                            setFavoriteList={setFavoriteProjectList}
+                        />
+                    )}
+                    {path === 'tasks' && (
+                        <Tasks
+                            tasks={tasks}
+                            favoriteTasks={favoriteTasks}
+                            sortedByDate={sortByLatestDate}
+                            checkedStates={checkedTaskStates}
+                            setCheckedStates={setCheckedTaskStates}
+                            favoriteList={favoriteTaskList}
+                            setFavoriteList={setFavoriteTaskList}
+                        />
+                    )}
                 </>
             }
         </div>

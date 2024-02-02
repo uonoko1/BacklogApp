@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import './Tasks.css'
-import { Task } from '../../types/Backlog'
+import { FavoriteTask, Task } from '../../types/Backlog'
 import axios from 'axios';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 
@@ -8,20 +8,13 @@ interface TasksProps {
     tasks: Task[];
     favoriteTasks: Task[];
     sortedByDate: (a: Task, b: Task) => number;
+    checkedStates: { [key: number]: boolean };
+    setCheckedStates: React.Dispatch<React.SetStateAction<{ [key: number]: boolean }>>;
+    favoriteList: FavoriteTask[];
+    setFavoriteList: React.Dispatch<React.SetStateAction<FavoriteTask[]>>;
 }
 
-export default function Tasks({ tasks, favoriteTasks, sortedByDate }: TasksProps) {
-    const [checkedStates, setCheckedStates] = useState<{ [key: number]: boolean }>({});
-
-    useEffect(() => {
-        const updatedCheckedStates = tasks.reduce((acc, tasks) => {
-            const isFavorite = favoriteTasks.some(favTask => favTask.id === tasks.id);
-            acc[tasks.id] = isFavorite;
-            return acc;
-        }, {} as { [key: number]: boolean });
-
-        setCheckedStates(updatedCheckedStates);
-    }, [tasks, favoriteTasks]);
+export default function Tasks({ tasks, favoriteTasks, sortedByDate, checkedStates, setCheckedStates, favoriteList, setFavoriteList }: TasksProps) {
 
     const handleCheckBox = async (id: number) => {
         const newState = !checkedStates[id];
@@ -33,8 +26,12 @@ export default function Tasks({ tasks, favoriteTasks, sortedByDate }: TasksProps
         try {
             if (newState) {
                 await axios.post(`${process.env.REACT_APP_API_URL}/api/fav/task/${id}`);
+                const newFavoriteList = { task_id: id, created_at: new Date().toISOString() };
+                setFavoriteList([...favoriteList, newFavoriteList]);
             } else {
                 await axios.delete(`${process.env.REACT_APP_API_URL}/api/fav/task/${id}`);
+                const updatedFavoriteList = favoriteList.filter(favTask => favTask.task_id !== id);
+                setFavoriteList(updatedFavoriteList);
             }
         } catch (err) {
             setCheckedStates({
