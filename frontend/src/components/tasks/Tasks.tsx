@@ -26,11 +26,11 @@ export default function Tasks({ tasks, favoriteTasks, sortedByDate, checkedState
         try {
             if (newState) {
                 await axios.post(`${process.env.REACT_APP_API_URL}/api/fav/task/${id}`);
-                const newFavoriteList = { task_id: id, created_at: new Date().toISOString() };
-                setFavoriteList([...favoriteList, newFavoriteList]);
+                const newFavoriteItem = { task_id: id, created_at: new Date().toISOString() };
+                setFavoriteList([...(favoriteList || []), newFavoriteItem]);
             } else {
                 await axios.delete(`${process.env.REACT_APP_API_URL}/api/fav/task/${id}`);
-                const updatedFavoriteList = favoriteList.filter(favTask => favTask.task_id !== id);
+                const updatedFavoriteList = (favoriteList || []).filter(favTask => favTask.task_id !== id);
                 setFavoriteList(updatedFavoriteList);
             }
         } catch (err) {

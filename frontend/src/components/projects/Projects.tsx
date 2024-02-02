@@ -25,11 +25,11 @@ export default function Projects({ projects, favoriteProjects, checkedStates, se
         try {
             if (newState) {
                 await axios.post(`${process.env.REACT_APP_API_URL}/api/fav/project/${id}`);
-                const newFavoriteList = { project_id: id, created_at: new Date().toISOString() };
-                setFavoriteList([...favoriteList, newFavoriteList]);
+                const newFavoriteItem = { project_id: id, created_at: new Date().toISOString() };
+                setFavoriteList([...(favoriteList || []), newFavoriteItem]);
             } else {
                 await axios.delete(`${process.env.REACT_APP_API_URL}/api/fav/project/${id}`);
-                const updatedFavoriteList = favoriteList.filter(favProject => favProject.project_id !== id);
+                const updatedFavoriteList = (favoriteList || []).filter(favProject => favProject.project_id !== id);
                 setFavoriteList(updatedFavoriteList);
             }
         } catch (err) {
