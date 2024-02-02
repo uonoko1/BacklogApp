@@ -7,11 +7,12 @@ import axios from 'axios';
 import Tasks from '../tasks/Tasks';
 import Projects from '../projects/Projects';
 import { FavoriteProject, FavoriteTask, Project, Task } from '../../types/Backlog';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function Center() {
-    const { path, searchInput, setSearchInput } = usePath();
+    const { path } = usePath();
     const { user } = useAuth();
+    const [searchInput, setSearchInput] = useState('');
     const [fullSpaceUrl, setFullSpaceUrl] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [projects, setProjects] = useState<Project[]>([]);
@@ -25,6 +26,7 @@ export default function Center() {
     const [favoriteTasks, setFavoriteTasks] = useState<Task[]>([]);
     const [checkedTaskStates, setCheckedTaskStates] = useState<{ [key: number]: boolean }>({});
     const navigate = useNavigate();
+    const location = useLocation();
 
     const redirectToBacklogAuth = async () => {
         if (!fullSpaceUrl) return;
@@ -149,6 +151,12 @@ export default function Center() {
         setDisplayTasks(filterTasks);
         navigate('/tasks')
     }
+
+    useEffect(() => {
+        setSearchInput('');
+        if (projects) setDisplayProjects(projects);
+        if (tasks) setDisplayTasks(tasks);
+    }, [location])
 
     return (
         <div className={`Center ${backlogOAuth ? 'AuthCenter' : ''}`}>
