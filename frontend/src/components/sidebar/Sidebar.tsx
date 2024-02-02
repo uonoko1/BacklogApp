@@ -9,7 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { usePath } from '../../state/PathContext';
 
 export default function Sidebar() {
-    const { path, setPath } = usePath();
+    const { path, setPath, setSearchInput } = usePath();
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -21,6 +21,7 @@ export default function Sidebar() {
             return;
         }
         setPath(currentPath);
+        setSearchInput('');
     }, [location]);
 
     return (

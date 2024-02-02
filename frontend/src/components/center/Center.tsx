@@ -10,9 +10,8 @@ import { FavoriteProject, FavoriteTask, Project, Task } from '../../types/Backlo
 import { useNavigate } from 'react-router-dom';
 
 export default function Center() {
-    const { path } = usePath();
+    const { path, searchInput, setSearchInput } = usePath();
     const { user } = useAuth();
-    const [searchInput, setSearchInput] = useState('');
     const [fullSpaceUrl, setFullSpaceUrl] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [projects, setProjects] = useState<Project[]>([]);
