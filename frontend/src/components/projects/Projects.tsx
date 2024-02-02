@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './Projects.css'
-import { FavoriteProject, Project } from '../../types/Backlog'
+import { Project } from '../../types/Backlog'
 import axios from 'axios';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 
@@ -11,6 +11,16 @@ interface ProjectsProps {
 
 export default function Projects({ projects, favoriteProjects }: ProjectsProps) {
     const [checkedStates, setCheckedStates] = useState<{ [key: number]: boolean }>({});
+
+    useEffect(() => {
+        const updatedCheckedStates = projects.reduce((acc, project) => {
+            const isFavorite = favoriteProjects.some(favProject => favProject.id === project.id);
+            acc[project.id] = isFavorite;
+            return acc;
+        }, {} as { [key: number]: boolean });
+
+        setCheckedStates(updatedCheckedStates);
+    }, [projects, favoriteProjects]);
 
     const handleCheckBox = async (id: number) => {
         const newState = !checkedStates[id];
@@ -26,7 +36,6 @@ export default function Projects({ projects, favoriteProjects }: ProjectsProps) 
                 await axios.delete(`${process.env.REACT_APP_API_URL}/api/fav/project/${id}`);
             }
         } catch (err) {
-            // エラーが発生した場合、チェック状態を元に戻す
             setCheckedStates({
                 ...checkedStates,
                 [id]: !newState

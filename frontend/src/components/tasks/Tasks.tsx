@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './Tasks.css'
 import { Task } from '../../types/Backlog'
 import axios from 'axios';
@@ -12,6 +12,16 @@ interface TasksProps {
 
 export default function Tasks({ tasks, favoriteTasks, sortedByDate }: TasksProps) {
     const [checkedStates, setCheckedStates] = useState<{ [key: number]: boolean }>({});
+
+    useEffect(() => {
+        const updatedCheckedStates = tasks.reduce((acc, tasks) => {
+            const isFavorite = favoriteTasks.some(favTask => favTask.id === tasks.id);
+            acc[tasks.id] = isFavorite;
+            return acc;
+        }, {} as { [key: number]: boolean });
+
+        setCheckedStates(updatedCheckedStates);
+    }, [tasks, favoriteTasks]);
 
     const handleCheckBox = async (id: number) => {
         const newState = !checkedStates[id];
