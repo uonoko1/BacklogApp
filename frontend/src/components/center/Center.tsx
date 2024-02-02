@@ -111,6 +111,30 @@ export default function Center() {
 
     const backlogOAuth = (!user?.backlog_oauth) && (path === 'projects' || path === 'tasks')
 
+    const placeholder = () => {
+        switch (path) {
+            case 'projects':
+                return 'プロジェクト名';
+            case 'tasks':
+                return '件名';
+            default:
+                return '';
+        }
+    }
+
+    const handleSearch = (value: string) => {
+        setSearchInput(value);
+
+        if (path === 'projects') {
+            const filterProjects = projects.filter((project) => project.name.includes(value));
+            setProjects(filterProjects);
+        }
+        if (path === 'tasks') {
+            const filtertasks = tasks.filter((task) => task.summary.includes(value));
+            setTasks(filtertasks);
+        }
+    }
+
     return (
         <div className={`Center ${backlogOAuth ? 'AuthCenter' : ''}`}>
             {backlogOAuth ?
@@ -134,7 +158,7 @@ export default function Center() {
                 <>
                     <div className='SearchBox'>
                         <SearchIcon />
-                        <input type='text' value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className='SearchBoxInput' />
+                        <input type='text' value={searchInput} onChange={(e) => handleSearch(e.target.value)} placeholder={placeholder()} className='SearchBoxInput' />
                     </div>
                     {path === 'projects' && (
                         <Projects
