@@ -130,14 +130,18 @@ export default function Center() {
         setSearchInput(value);
 
         if (path === 'projects') {
-            const filterProjects = projects.filter((project) => project.name.includes(value));
+            const filterProjects = projects.filter((project) =>
+                project.name.toLowerCase().includes(value.toLowerCase())
+            );
             setDisplayProjects(filterProjects);
         }
         if (path === 'tasks') {
-            const filtertasks = tasks.filter((task) => task.summary.includes(value));
-            setDisplayTasks(filtertasks);
+            const filterTasks = tasks.filter((task) =>
+                task.summary.toLowerCase().includes(value.toLowerCase())
+            );
+            setDisplayTasks(filterTasks);
         }
-    }
+    };
 
     return (
         <div className={`Center ${backlogOAuth ? 'AuthCenter' : ''}`}>
