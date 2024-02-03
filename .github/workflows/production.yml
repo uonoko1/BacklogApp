@@ -17,6 +17,12 @@ jobs:
         chmod 600 deploy_key.pem
         mkdir -p ~/.ssh
         ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+      
+      # Setup Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18'
 
     # Transfer frontend source and .env file to production
     - name: Transfer frontend source to production

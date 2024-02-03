@@ -35,7 +35,7 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
         createdDate = new Date(selectTask.created);
         formattedDate = `${createdDate.getFullYear()}/${createdDate.getMonth() + 1}/${createdDate.getDate()} ${createdDate.getHours()}:${createdDate.getMinutes()}:${createdDate.getSeconds()}`;
     }
-    if (selectTask)
+    if (selectTask) {
         return (
             <div className='DetailTaskContent'>
                 <div className="DetailTaskTitle">
@@ -61,4 +61,7 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
                 </div>
             </div>
         )
+    } else {
+        return null;
+    }
 }
