@@ -148,16 +148,16 @@ type Star struct {
 }
 
 type Comment struct {
-	ID            int           `json:"id"`
-	ProjectID     int           `json:"projectId"`
-	IssueID       int           `json:"issueId"`
-	Content       string        `json:"content"`
-	ChangeLog     *string       `json:"changeLog"`
-	CreatedUser   CreatedUser   `json:"createdUser"`
-	Created       string        `json:"created"`
-	Updated       string        `json:"updated"`
-	Stars         []interface{} `json:"stars"`
-	Notifications []interface{} `json:"notifications"`
+	ID            int            `json:"id"`
+	ProjectID     int            `json:"projectId"`
+	IssueID       int            `json:"issueId"`
+	Content       string         `json:"content"`
+	ChangeLog     *[]interface{} `json:"changeLog"`
+	CreatedUser   CreatedUser    `json:"createdUser"`
+	Created       string         `json:"created"`
+	Updated       string         `json:"updated"`
+	Stars         []interface{}  `json:"stars"`
+	Notifications []interface{}  `json:"notifications"`
 }
 
 type CreatedUser struct {
