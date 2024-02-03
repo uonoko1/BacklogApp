@@ -94,9 +94,9 @@ func (r *authRepository) CreateRefreshToken(ctx context.Context, UserId, refresh
 
 func (r *authRepository) FindRefreshToken(ctx context.Context, refreshToken string) error {
 	var token model.RefreshToken
-	query := `SELECT id, userid, refreshtoken FROM refresh_tokens WHERE refreshtoken = ?`
+	query := `SELECT id, userid, refreshtoken, created_at FROM refresh_tokens WHERE refreshtoken = ?`
 
-	err := r.db.QueryRowContext(ctx, query, refreshToken).Scan(&token.Id, &token.UserId, &token.RefreshToken)
+	err := r.db.QueryRowContext(ctx, query, refreshToken).Scan(&token.Id, &token.UserId, &token.RefreshToken, &token.CreatedAt)
 	if err != nil {
 		return err
 	}
