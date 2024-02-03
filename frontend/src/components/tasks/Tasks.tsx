@@ -19,7 +19,7 @@ interface TasksProps {
 export default function Tasks({ tasks, favoriteTasks, sortedByDate, checkedStates, setCheckedStates, favoriteList, setFavoriteList }: TasksProps) {
     const navigate = useNavigate();
     const { taskId } = useParams();
-    const [selectTask, setSelectTask] = useState<Task>();
+    const [selectTask, setSelectTask] = useState<Task | null>(null);
 
     const handleCheckBox = async (id: number) => {
         const newState = !checkedStates[id];
@@ -56,29 +56,31 @@ export default function Tasks({ tasks, favoriteTasks, sortedByDate, checkedState
     const sortedFavoriteTasks = [...favoriteTasks].sort(sortedByDate);
 
     const handleSelectTask = (task: Task) => {
-        setSelectTask(task);
         navigate(`tasks/${task.id}`);
     }
 
     useEffect(() => {
-        if (taskId && !selectTask) {
-            const fetchTaskDetail = async () => {
-                try {
-                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/task/${taskId}`);
-                    setSelectTask(response.data);
-                } catch (err) {
-                    console.log("タスクの詳細データの取得に失敗しました。", err);
-                }
-            };
+        const fetchTaskDetail = async () => {
+            try {
+                const taskNumId = Number(taskId)
+                const findTask = tasks.find((task) => task.id === taskNumId)
+                setSelectTask(findTask !== undefined ? findTask : null);
+            } catch (err) {
+                console.log("タスクの詳細データの取得に失敗しました。", err);
+            }
+        };
+        if (taskId && tasks) fetchTaskDetail();
+    }, [taskId, tasks])
 
-            fetchTaskDetail();
-        }
-    }, [taskId])
+    const handleBackToTasks = () => {
+        navigate('/tasks');
+        setSelectTask(null);
+    }
 
     return (
         <>
             {selectTask ?
-                <DetailTask task={selectTask} />
+                <DetailTask task={selectTask} handleBack={handleBackToTasks} />
                 :
                 <div className='tasksContent'>
                     <div className='Favorite'>
