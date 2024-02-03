@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import './DetailTask.css'
 import { Task } from '../../types/Backlog';
-import Description from '../../utils/description/Description';
+import Description from '../../utils/Description';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -66,7 +66,9 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
                     <div className="taskTop">
                         <p className='taskCreatedUsername'>{selectTask.createdUser.name}</p>
                         <p className='taskCreatedDate'>登録日 {formattedDate}</p>
-                        <Description description={selectTask.description} />
+                        <div className="taskDescription">
+                            <Description description={selectTask.description} />
+                        </div>
                         <div className="taskProperties">
                             <div className="TaskPriority">
                                 <div className='TaskPriorityLabel'>優先度</div>
@@ -78,6 +80,9 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
                             </div>
                         </div>
                     </div>
+                </div>
+                <div className="taskComments">
+
                 </div>
             </div>
         )

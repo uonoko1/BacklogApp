@@ -52,3 +52,28 @@
     align-items: center;
     padding: 10px 0 9px 10px;
 }
+
+.taskDescription ul {
+    padding-inline-start: 40px;
+}
+
+.taskDescription li {
+    list-style-type: disc;
+    margin: 0.2rem 0;
+}
+
+.taskDescription p {
+    margin: 1rem 0 1rem 0;
+}
+
+.taskDescription h2 {
+    line-height: 2.8rem;
+    padding: 6px 0;
+    border-bottom: 1px solid #4caf93;
+    margin: 1.3rem 0;
+}
+
+.taskDescription h3 {
+    line-height: 2.4rem;
+    margin: 1rem 0;
+}
