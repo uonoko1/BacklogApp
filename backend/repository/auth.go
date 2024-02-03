@@ -101,6 +101,8 @@ func (r *authRepository) FindRefreshToken(ctx context.Context, refreshToken stri
 		return err
 	}
 
+	fmt.Println("refresh token createdAt:", token.CreatedAt)
+
 	if token.CreatedAt.Add(time.Hour * 24 * 90).Before(time.Now()) {
 		return errors.New("refresh token expired")
 	}
