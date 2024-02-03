@@ -10,4 +10,5 @@ func BacklogRoutes(e *echo.Echo, backlogController controller.BacklogController,
 	e.GET("/api/backlog", backlogController.OAuthCallback)
 	e.GET("/api/backlog/projects", backlogController.GetProjects, authMiddleware)
 	e.GET("/api/backlog/tasks", backlogController.GetTasks, authMiddleware)
+	e.GET("/api/backlog/comments/:taskId", backlogController.GetComments, authMiddleware)
 }

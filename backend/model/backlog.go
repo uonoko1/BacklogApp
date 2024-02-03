@@ -146,3 +146,33 @@ type Star struct {
 	Presenter BacklogUser `json:"presenter"`
 	Created   string      `json:"created"`
 }
+
+type Comment struct {
+	ID            int           `json:"id"`
+	ProjectID     int           `json:"projectId"`
+	IssueID       int           `json:"issueId"`
+	Content       string        `json:"content"`
+	ChangeLog     *string       `json:"changeLog"`
+	CreatedUser   CreatedUser   `json:"createdUser"`
+	Created       string        `json:"created"`
+	Updated       string        `json:"updated"`
+	Stars         []interface{} `json:"stars"`
+	Notifications []interface{} `json:"notifications"`
+}
+
+type CreatedUser struct {
+	ID            int          `json:"id"`
+	UserID        string       `json:"userId"`
+	Name          string       `json:"name"`
+	RoleType      int          `json:"roleType"`
+	Lang          string       `json:"lang"`
+	NulabAccount  NulabAccount `json:"nulabAccount"`
+	MailAddress   string       `json:"mailAddress"`
+	LastLoginTime string       `json:"lastLoginTime"`
+}
+
+type NulabAccount struct {
+	NulabID  string `json:"nulabId"`
+	Name     string `json:"name"`
+	UniqueID string `json:"uniqueId"`
+}

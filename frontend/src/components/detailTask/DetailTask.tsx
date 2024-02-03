@@ -4,6 +4,7 @@ import { Task } from '../../types/Backlog';
 import Description from '../../utils/description/Description';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
 
 interface DetailTaskProps {
     tasks: Task[];
@@ -13,9 +14,10 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
     const [selectTask, setSelectTask] = useState<Task | null>(null);
     const taskId = useParams().taskId;
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
+    const [comments, setComments] = useState<Comment[] | null>(null);
 
     useEffect(() => {
-        console.log("taskId:", taskId)
         const fetchTaskDetail = async () => {
             try {
                 const taskNumId = Number(taskId)
@@ -27,6 +29,24 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
         };
         if (taskId && tasks) fetchTaskDetail();
     }, [taskId, tasks])
+
+    useEffect(() => {
+        const fetchTaskComments = async () => {
+            if (!selectTask) return;
+            try {
+                setIsLoading(true);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/comments/${selectTask.id}`);
+                setComments(response.data);
+                console.log("コメント一覧:", response.data)
+            } catch (err) {
+                console.log("err:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        if (selectTask) fetchTaskComments();
+    }, [selectTask])
 
     let createdDate
     let formattedDate

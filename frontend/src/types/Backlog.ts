@@ -140,3 +140,33 @@ export interface FavoriteTask {
     task_id: number;
     created_at: string;
 }
+
+export interface Comment {
+    id: number;
+    projectId: number;
+    issueId: number;
+    content: string;
+    changeLog?: null;
+    createdUser: CreatedUser;
+    created: string;
+    updated: string;
+    stars: any[];
+    notifications: any[];
+}
+
+interface CreatedUser {
+    id: number;
+    userId: string;
+    name: string;
+    roleType: number;
+    lang: string;
+    nulabAccount: NulabAccount;
+    mailAddress: string;
+    lastLoginTime: string;
+}
+
+interface NulabAccount {
+    nulabId: string;
+    name: string;
+    uniqueId: string;
+}

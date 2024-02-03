@@ -4,6 +4,7 @@ import (
 	"backend/model"
 	"backend/usecase"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo"
@@ -13,6 +14,7 @@ type BacklogController interface {
 	OAuthCallback(ctx echo.Context) error
 	GetProjects(ctx echo.Context) error
 	GetTasks(ctx echo.Context) error
+	GetComments(ctx echo.Context) error
 }
 
 type backlogController struct {
@@ -135,4 +137,54 @@ func (c *backlogController) GetTasks(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, tasks)
+}
+
+func (c *backlogController) GetComments(ctx echo.Context) error {
+	tempUser := ctx.Get("user")
+	taskIdStr := ctx.Param("taskId")
+
+	_, err := strconv.Atoi(taskIdStr)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid task ID"})
+	}
+
+	user, ok := tempUser.(*model.User)
+	if !ok {
+		return ctx.JSON(http.StatusInternalServerError, "ユーザー情報の取得に失敗しました")
+	}
+
+	if !user.BacklogDomain.Valid {
+		return ctx.JSON(http.StatusBadRequest, "ユーザーのBacklogドメインが設定されていません")
+	}
+
+	backlogDomain := user.BacklogDomain.String
+
+	if !user.BacklogRefreshToken.Valid {
+		return ctx.JSON(http.StatusBadRequest, "ユーザーのBacklogリフレッシュトークンが設定されていません")
+	}
+	backlogRefreshToken := user.BacklogRefreshToken.String
+
+	token := ""
+	cookie, err := ctx.Cookie("backlog_token")
+	if err == nil {
+		token = cookie.Value
+	}
+
+	comments, newAccessToken, err := c.u.GetComments(ctx.Request().Context(), user.Id, token, taskIdStr, backlogDomain, backlogRefreshToken)
+	if err != nil {
+		return ctx.JSON(http.StatusUnauthorized, err.Error())
+	}
+
+	if newAccessToken != "" {
+		ctx.SetCookie(&http.Cookie{
+			Name:     "backlog_token",
+			Value:    newAccessToken,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   true,
+			Expires:  time.Now().Add(24 * time.Hour),
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, comments)
 }
