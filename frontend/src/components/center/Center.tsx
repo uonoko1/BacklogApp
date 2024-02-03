@@ -117,7 +117,7 @@ export default function Center() {
         return dateB.getTime() - dateA.getTime();
     }
 
-    const backlogOAuth = (!user?.backlog_oauth) && (path === 'projects' || path === 'tasks')
+    const backlogOAuth = (!user?.backlog_oauth) && (path === 'projects' || path === 'tasks');
 
     const placeholder = () => {
         switch (path) {

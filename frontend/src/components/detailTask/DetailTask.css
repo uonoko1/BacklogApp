@@ -1,0 +1,54 @@
+.taskDialog {
+    background-color: #ffffff;
+    padding: 15px 25px 25px 25px;
+    border: 1px solid #c2c2c2;
+    border-radius: 4px;
+}
+
+.DetailTaskTitle {
+    display: flex;
+    align-items: center;
+    margin: 2rem 0 0.5rem 0;
+}
+
+.backIcon {
+    margin-right: 0.5rem;
+}
+
+.taskCreatedUsername {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.taskCreatedDate {
+    font-size: 0.9rem;
+    color: #777;
+}
+
+.taskProperties {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.taskProperties>div {
+    display: flex;
+    flex: 0 0 48.5%;
+    border-top: 1px solid #bdbdbd;
+    border-bottom: 1px solid #bdbdbd;
+}
+
+.TaskPriorityLabel,
+.TaskAssignerLable {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px 9px 10px;
+    color: #777;
+}
+
+.TaskPriorityValue,
+.TaskAssignerValue {
+    display: flex;
+    align-items: center;
+    padding: 10px 0 9px 10px;
+}

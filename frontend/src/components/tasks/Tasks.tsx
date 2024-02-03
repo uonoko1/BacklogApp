@@ -3,6 +3,8 @@ import './Tasks.css'
 import { FavoriteTask, Task } from '../../types/Backlog'
 import axios from 'axios';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import { useNavigate, useParams } from 'react-router-dom';
+import DetailTask from '../detailTask/DetailTask';
 
 interface TasksProps {
     tasks: Task[];
@@ -15,6 +17,9 @@ interface TasksProps {
 }
 
 export default function Tasks({ tasks, favoriteTasks, sortedByDate, checkedStates, setCheckedStates, favoriteList, setFavoriteList }: TasksProps) {
+    const navigate = useNavigate();
+    const { taskId } = useParams();
+    const [selectTask, setSelectTask] = useState<Task>();
 
     const handleCheckBox = async (id: number) => {
         const newState = !checkedStates[id];
@@ -50,60 +55,86 @@ export default function Tasks({ tasks, favoriteTasks, sortedByDate, checkedState
     const sortedTasks = [...tasks].sort(sortedByDate);
     const sortedFavoriteTasks = [...favoriteTasks].sort(sortedByDate);
 
+    const handleSelectTask = (task: Task) => {
+        setSelectTask(task);
+        navigate(`tasks/${task.id}`);
+    }
+
+    useEffect(() => {
+        if (taskId && !selectTask) {
+            const fetchTaskDetail = async () => {
+                try {
+                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/task/${taskId}`);
+                    setSelectTask(response.data);
+                } catch (err) {
+                    console.log("タスクの詳細データの取得に失敗しました。", err);
+                }
+            };
+
+            fetchTaskDetail();
+        }
+    }, [taskId])
+
     return (
-        <div className='tasksContent'>
-            <div className='Favorite'>
-                <h4>お気に入り</h4>
-                <div className='taskItem'>
-                    <p className='taskId'>課題ID</p>
-                    <p className='taskKey'>キー</p>
-                    <p className='taskName'>件名</p>
-                    <p className='taskPriority'>優先度</p>
-                    <p className='taskDueDate'>期限日</p>
+        <>
+            {selectTask ?
+                <DetailTask task={selectTask} />
+                :
+                <div className='tasksContent'>
+                    <div className='Favorite'>
+                        <h4>お気に入り</h4>
+                        <div className='taskItem'>
+                            <p className='taskId'>課題ID</p>
+                            <p className='taskKey'>キー</p>
+                            <p className='taskName'>件名</p>
+                            <p className='taskPriority'>優先度</p>
+                            <p className='taskDueDate'>期限日</p>
+                        </div>
+                        <ul>
+                            {sortedFavoriteTasks.map((task) => {
+                                return (
+                                    <li key={task.id} onClick={() => handleSelectTask(task)}>
+                                        <HighlightOffIcon className='deleteIcon' onClick={() => handleCheckBox(task.id)} />
+                                        <p className='taskId'>{task.id}</p>
+                                        <p className='taskKey'>{task.issueKey}</p>
+                                        <p className='taskName'>{task.summary}</p>
+                                        <p className='taskPriority'>{task.priority.name}</p>
+                                        <p className='taskDueDate'>{formatDate(task.dueDate)}</p>
+                                    </li>
+                                )
+                            })}
+                        </ul>
+                    </div>
+                    <div className='SearchResult'>
+                        <h4>検索結果(新しい順)</h4>
+                        <div className='taskItem'>
+                            <p className='taskId'>課題ID</p>
+                            <p className='taskKey'>キー</p>
+                            <p className='taskName'>件名</p>
+                            <p className='taskPriority'>優先度</p>
+                            <p className='taskDueDate'>期限日</p>
+                        </div>
+                        <ul>
+                            {sortedTasks.map((task) => {
+                                return (
+                                    <li key={task.id} onClick={() => handleSelectTask(task)}>
+                                        <input
+                                            type="checkbox"
+                                            checked={!!checkedStates[task.id]}
+                                            onChange={() => handleCheckBox(task.id)}
+                                        />
+                                        <p className='taskId'>{task.id}</p>
+                                        <p className='taskKey'>{task.issueKey}</p>
+                                        <p className='taskName'>{task.summary}</p>
+                                        <p className='taskPriority'>{task.priority.name}</p>
+                                        <p className='taskDueDate'>{formatDate(task.dueDate)}</p>
+                                    </li>
+                                )
+                            })}
+                        </ul>
+                    </div>
                 </div>
-                <ul>
-                    {sortedFavoriteTasks.map((task) => {
-                        return (
-                            <li key={task.id}>
-                                <HighlightOffIcon className='deleteIcon' onClick={() => handleCheckBox(task.id)} />
-                                <p className='taskId'>{task.id}</p>
-                                <p className='taskKey'>{task.issueKey}</p>
-                                <p className='taskName'>{task.summary}</p>
-                                <p className='taskPriority'>{task.priority.name}</p>
-                                <p className='taskDueDate'>{formatDate(task.dueDate)}</p>
-                            </li>
-                        )
-                    })}
-                </ul>
-            </div>
-            <div className='SearchResult'>
-                <h4>検索結果(新しい順)</h4>
-                <div className='taskItem'>
-                    <p className='taskId'>課題ID</p>
-                    <p className='taskKey'>キー</p>
-                    <p className='taskName'>件名</p>
-                    <p className='taskPriority'>優先度</p>
-                    <p className='taskDueDate'>期限日</p>
-                </div>
-                <ul>
-                    {sortedTasks.map((task) => {
-                        return (
-                            <li key={task.id}>
-                                <input
-                                    type="checkbox"
-                                    checked={!!checkedStates[task.id]}
-                                    onChange={() => handleCheckBox(task.id)}
-                                />
-                                <p className='taskId'>{task.id}</p>
-                                <p className='taskKey'>{task.issueKey}</p>
-                                <p className='taskName'>{task.summary}</p>
-                                <p className='taskPriority'>{task.priority.name}</p>
-                                <p className='taskDueDate'>{formatDate(task.dueDate)}</p>
-                            </li>
-                        )
-                    })}
-                </ul>
-            </div>
-        </div>
+            }
+        </>
     )
 }

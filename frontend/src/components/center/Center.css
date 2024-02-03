@@ -2,7 +2,7 @@
     position: relative;
     top: 51px;
     margin-left: 200px;
-    padding: 3rem 4rem 3rem 4rem;
+    padding: 3rem 2rem 3rem 2rem;
     height: calc(100% - 6rem - 51px);
 }
 
@@ -21,6 +21,7 @@
     min-width: 350px;
     display: flex;
     align-items: center;
+    margin-bottom: 1rem;
 }
 
 .SearchBox svg {
