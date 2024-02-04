@@ -141,7 +141,7 @@
     bottom: 0;
     right: 0;
     width: calc(100% - 200px);
-    padding-top: 15px 0 15px 0;
+    padding: 15px 0;
 }
 
 .commentForm {
