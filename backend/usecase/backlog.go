@@ -225,18 +225,18 @@ func (b *backlogUsecase) GetComments(ctx context.Context, userId, token, taskId,
 }
 
 func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDescription string, existingComments []string) (string, error) {
-	url := "https://api.openai.com/v1/chat/completions" // 使用するエンドポイントを更新
+	url := "https://api.openai.com/v1/chat/completions"
 
-	// ユーザーからのメッセージをシミュレートするためのプロンプトを作成
-	messages := make([]map[string]string, len(existingComments)+1)
-	for i, comment := range existingComments {
-		messages[i] = map[string]string{"role": "system", "content": comment}
+	messages := []map[string]string{}
+
+	for _, comment := range existingComments {
+		messages = append(messages, map[string]string{"role": "system", "content": comment})
 	}
-	// 最後に質問を追加
-	messages[len(messages)-1] = map[string]string{"role": "user", "content": fmt.Sprintf("課題のタイトル: %s\n課題の説明: %s\nこれに続く新しいコメントを生成してください。", issueTitle, issueDescription)}
+
+	messages = append(messages, map[string]string{"role": "user", "content": fmt.Sprintf("課題のタイトル: %s\n課題の説明: %s\nこれに続く新しいコメントを生成してください。", issueTitle, issueDescription)})
 
 	requestBody, err := json.Marshal(map[string]interface{}{
-		"model":    "gpt-4", // 使用するチャットモデルを指定
+		"model":    "gpt-4",
 		"messages": messages,
 	})
 	if err != nil {
@@ -248,7 +248,7 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 		return "", fmt.Errorf("HTTPリクエスト作成エラー: %v", err)
 	}
 
-	apiKey := os.Getenv("OPENAI_SECRETKEY") // 環境変数からAPIキーを取得
+	apiKey := os.Getenv("OPENAI_SECRETKEY")
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
 

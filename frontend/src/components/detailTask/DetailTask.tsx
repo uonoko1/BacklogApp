@@ -135,7 +135,7 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
         const data = {
             issueTitle: selectTask.summary,
             issueDescription: selectTask.description,
-            existingComments: comments.map(comment => comment.content),
+            existingComments: sortCommentsByDate(comments).map(comment => comment.content),
         };
 
         try {
