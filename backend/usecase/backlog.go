@@ -225,88 +225,57 @@ func (b *backlogUsecase) GetComments(ctx context.Context, userId, token, taskId,
 }
 
 func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDescription string, existingComments []string) (string, error) {
-	prompt := fmt.Sprintf("課題のタイトル: %s\n課題の説明: %s\n既存のコメント:\n%s\nこれに続く新しいコメントを生成してください。",
-		issueTitle,
-		issueDescription,
-		strings.Join(existingComments, "\n"))
+	url := "https://api.openai.com/v1/chat/completions" // 使用するエンドポイントを更新
 
-	fmt.Println("6")
-
-	url := "https://api.openai.com/v1/chat/completions"
-
-	fmt.Println("7")
+	// ユーザーからのメッセージをシミュレートするためのプロンプトを作成
+	messages := make([]map[string]string, len(existingComments)+1)
+	for i, comment := range existingComments {
+		messages[i] = map[string]string{"role": "system", "content": comment}
+	}
+	// 最後に質問を追加
+	messages[len(messages)-1] = map[string]string{"role": "user", "content": fmt.Sprintf("課題のタイトル: %s\n課題の説明: %s\nこれに続く新しいコメントを生成してください。", issueTitle, issueDescription)}
 
 	requestBody, err := json.Marshal(map[string]interface{}{
-		"prompt":      prompt,
-		"max_tokens":  150,
-		"temperature": 0.7,
+		"model":    "適切なチャットモデル", // 使用するチャットモデルを指定
+		"messages": messages,
 	})
-
-	fmt.Println("8")
-
 	if err != nil {
 		return "", fmt.Errorf("JSONエンコーディングエラー: %v", err)
 	}
 
-	fmt.Println("9")
-
-	req, err := http.NewRequest("POST", url, strings.NewReader(string(requestBody)))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return "", fmt.Errorf("HTTPリクエスト作成エラー: %v", err)
 	}
 
-	fmt.Println("10")
-
-	apiKey := os.Getenv("OPENAI_SECRETKEY")
+	apiKey := os.Getenv("OPENAI_SECRETKEY") // 環境変数からAPIキーを取得
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	fmt.Println("11")
-
 	client := &http.Client{}
-
-	fmt.Println("12")
-
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("HTTPリクエスト送信エラー: %v", err)
 	}
-
-	fmt.Println("13")
-
-	fmt.Println("Status code:", resp.StatusCode)
-
 	defer resp.Body.Close()
-
-	fmt.Println("14")
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("レスポンス読み込みエラー: %v", err)
 	}
 
-	fmt.Println("15")
-
 	var response struct {
 		Choices []struct {
-			Text string `json:"text"`
+			Message map[string]string `json:"message"`
 		} `json:"choices"`
 	}
-
-	fmt.Println("16")
-
 	if err := json.Unmarshal(body, &response); err != nil {
 		return "", fmt.Errorf("JSONデコーディングエラー: %v", err)
 	}
 
-	fmt.Println("17")
-	fmt.Println("response:", response)
-
-	if len(response.Choices) > 0 {
-		return strings.TrimSpace(response.Choices[0].Text), nil
+	if len(response.Choices) > 0 && response.Choices[0].Message != nil {
+		return response.Choices[0].Message["content"], nil
 	}
-
-	fmt.Println("18")
 
 	return "", fmt.Errorf("コメントが生成されませんでした")
 }
