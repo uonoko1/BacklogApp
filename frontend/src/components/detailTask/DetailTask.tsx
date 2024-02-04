@@ -71,6 +71,7 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
     const taskId = useParams().taskId;
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+    const [aiLoading, setAiLoading] = useState(false);
     const [comments, setComments] = useState<Comment[] | null>([]);
     const [openEditor, setOpenEditor] = useState(false);
     const [inputComment, setInputComment] = useState('');
@@ -139,10 +140,13 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
         };
 
         try {
+            setAiLoading(true);
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/backlog/autoComment`, data);
             setInputComment(response.data);
         } catch (err) {
             console.log('err:', err);
+        } finally {
+            setAiLoading(false);
         }
     }
 
@@ -229,9 +233,13 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
                             />
                             {openEditor &&
                                 <>
-                                    <button type='button' onClick={generateComment} className='autoComment'>
-                                        <PsychologyIcon />
-                                    </button>
+                                    {aiLoading ?
+                                        <TailSpin color='#00BFFF' height={30} width={30} />
+                                        :
+                                        <button type='button' onClick={generateComment} className='autoComment'>
+                                            <PsychologyIcon />
+                                        </button>
+                                    }
                                 </>}
                         </div>
                         {openEditor &&
