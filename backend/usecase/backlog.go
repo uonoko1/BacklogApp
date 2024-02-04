@@ -118,8 +118,6 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 		return nil, "", fmt.Errorf("failed to get projects, status code: %d", resp.StatusCode)
 	}
 
-	fmt.Println("projects:", resp.Body)
-
 	var projects []model.Project
 	if err := json.NewDecoder(resp.Body).Decode(&projects); err != nil {
 		return nil, "", fmt.Errorf("error decoding projects response: %v", err)
@@ -163,8 +161,6 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 	if resp.StatusCode != http.StatusOK {
 		return nil, "", fmt.Errorf("failed to get tasks, status code: %d", resp.StatusCode)
 	}
-
-	fmt.Println("tasks:", resp.Body)
 
 	var tasks []model.Task
 	if err := json.NewDecoder(resp.Body).Decode(&tasks); err != nil {
@@ -234,6 +230,7 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 	}
 
 	messages = append(messages, map[string]string{"role": "user", "content": fmt.Sprintf("課題のタイトル: %s\n課題の説明: %s\nこれに続く新しいコメントを生成してください。", issueTitle, issueDescription)})
+	fmt.Println("messages:", messages)
 
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"model":    "gpt-4",

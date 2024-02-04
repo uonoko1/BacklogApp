@@ -205,8 +205,6 @@ func (c *backlogController) GetAiComment(ctx echo.Context) error {
 		return err
 	}
 
-	fmt.Println("1")
-
 	return ctx.String(http.StatusOK, generatedComment)
 }
 

@@ -96,7 +96,7 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
                 setIsLoading(true);
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/comments/${selectTask.id}`);
                 setComments(response.data);
-                console.log('コメント一覧:', response.data)
+                // console.log('コメント一覧:', response.data)
             } catch (err) {
                 console.log('err:', err);
             } finally {
