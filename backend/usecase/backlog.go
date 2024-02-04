@@ -236,7 +236,7 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 	messages[len(messages)-1] = map[string]string{"role": "user", "content": fmt.Sprintf("課題のタイトル: %s\n課題の説明: %s\nこれに続く新しいコメントを生成してください。", issueTitle, issueDescription)}
 
 	requestBody, err := json.Marshal(map[string]interface{}{
-		"model":    "適切なチャットモデル", // 使用するチャットモデルを指定
+		"model":    "gpt-4", // 使用するチャットモデルを指定
 		"messages": messages,
 	})
 	if err != nil {
