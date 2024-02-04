@@ -230,7 +230,11 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 		issueDescription,
 		strings.Join(existingComments, "\n"))
 
+	fmt.Println("6")
+
 	url := "https://api.openai.com/v1/engines/gpt-4/completions"
+
+	fmt.Println("7")
 
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"prompt":      prompt,
@@ -238,43 +242,68 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 		"temperature": 0.7,
 	})
 
+	fmt.Println("8")
+
 	if err != nil {
 		return "", fmt.Errorf("JSONエンコーディングエラー: %v", err)
 	}
+
+	fmt.Println("9")
 
 	req, err := http.NewRequest("POST", url, strings.NewReader(string(requestBody)))
 	if err != nil {
 		return "", fmt.Errorf("HTTPリクエスト作成エラー: %v", err)
 	}
 
+	fmt.Println("10")
+
 	apiKey := os.Getenv("OPENAI_SECRETKEY")
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
+	fmt.Println("11")
+
 	client := &http.Client{}
+
+	fmt.Println("12")
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("HTTPリクエスト送信エラー: %v", err)
 	}
+
+	fmt.Println("13")
+
 	defer resp.Body.Close()
+
+	fmt.Println("14")
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("レスポンス読み込みエラー: %v", err)
 	}
 
+	fmt.Println("15")
+
 	var response struct {
 		Choices []struct {
 			Text string `json:"text"`
 		} `json:"choices"`
 	}
+
+	fmt.Println("16")
+
 	if err := json.Unmarshal(body, &response); err != nil {
 		return "", fmt.Errorf("JSONデコーディングエラー: %v", err)
 	}
 
+	fmt.Println("17")
+
 	if len(response.Choices) > 0 {
 		return strings.TrimSpace(response.Choices[0].Text), nil
 	}
+
+	fmt.Println("18")
 
 	return "", fmt.Errorf("コメントが生成されませんでした")
 }

@@ -142,7 +142,7 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/backlog/autoComment`, data);
             setInputComment(response.data);
         } catch (err) {
-            console.error('コメント生成エラー:', err);
+            console.log('err:', err);
         }
     }
 
