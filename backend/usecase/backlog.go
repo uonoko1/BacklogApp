@@ -274,9 +274,9 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 
 	fmt.Println("13")
 
-	fmt.Println("resp:", resp.Body)
+	fmt.Println("Status code:", resp.StatusCode)
 
-	// defer resp.Body.Close()
+	defer resp.Body.Close()
 
 	fmt.Println("14")
 
