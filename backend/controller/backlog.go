@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"backend/controller/request"
 	"backend/model"
 	"backend/usecase"
 	"net/http"
@@ -15,6 +16,8 @@ type BacklogController interface {
 	GetProjects(ctx echo.Context) error
 	GetTasks(ctx echo.Context) error
 	GetComments(ctx echo.Context) error
+	GetAiComment(ctx echo.Context) error
+	PostComment(ctx echo.Context) error
 }
 
 type backlogController struct {
@@ -187,4 +190,66 @@ func (c *backlogController) GetComments(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, comments)
+}
+
+func (c *backlogController) GetAiComment(ctx echo.Context) error {
+	var req request.TaskMaterials
+	if err := ctx.Bind(&req); err != nil {
+		return err
+	}
+
+	generatedComment, err := c.u.GetAiComment(ctx.Request().Context(), req.IssueTitle, req.IssueDescription, req.ExistingComments)
+	if err != nil {
+		return err
+	}
+
+	return ctx.String(http.StatusOK, generatedComment)
+}
+
+func (c *backlogController) PostComment(ctx echo.Context) error {
+	tempUser := ctx.Get("user")
+	user, ok := tempUser.(*model.User)
+	if !ok {
+		return ctx.JSON(http.StatusInternalServerError, "ユーザー情報の取得に失敗しました")
+	}
+
+	var req request.Comment
+	if err := ctx.Bind(&req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, "入力情報が誤っています。")
+	}
+
+	if !user.BacklogDomain.Valid {
+		return ctx.JSON(http.StatusBadRequest, "ユーザーのBacklogドメインが設定されていません")
+	}
+
+	backlogDomain := user.BacklogDomain.String
+
+	if !user.BacklogRefreshToken.Valid {
+		return ctx.JSON(http.StatusBadRequest, "ユーザーのBacklogリフレッシュトークンが設定されていません")
+	}
+	backlogRefreshToken := user.BacklogRefreshToken.String
+
+	token := ""
+	cookie, err := ctx.Cookie("backlog_token")
+	if err == nil {
+		token = cookie.Value
+	}
+
+	postedComment, newAccessToken, err := c.u.PostComment(ctx.Request().Context(), user.Id, req.TaskId, req.Comment, token, backlogDomain, backlogRefreshToken)
+	if err != nil {
+		return ctx.JSON(http.StatusUnauthorized, err.Error())
+	}
+
+	if newAccessToken != "" {
+		ctx.SetCookie(&http.Cookie{
+			Name:     "backlog_token",
+			Value:    newAccessToken,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   true,
+			Expires:  time.Now().Add(24 * time.Hour),
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, postedComment)
 }

@@ -154,7 +154,7 @@ export interface Comment {
     notifications: any[];
 }
 
-interface CreatedUser {
+export interface CreatedUser {
     id: number;
     userId: string;
     name: string;
@@ -165,7 +165,7 @@ interface CreatedUser {
     lastLoginTime: string;
 }
 
-interface NulabAccount {
+export interface NulabAccount {
     nulabId: string;
     name: string;
     uniqueId: string;

@@ -58,6 +58,7 @@ jobs:
         echo "BACKLOG_CLIENT_ID=${{ secrets.BACKLOG_CLIENT_ID }}" >> backend/.env
         echo "BACKLOG_CLIENT_SECRET=${{ secrets.BACKLOG_CLIENT_SECRET }}" >> backend/.env
         echo "BACKLOG_REDIRECT_URI=${{ secrets.BACKLOG_REDIRECT_URI }}" >> backend/.env
+        echo "OPENAI_SECRETKEY=${{ secrets.OPENAI_SECRETKEY }}" >> backend/.env
 
     - name: Build backend
       run: |

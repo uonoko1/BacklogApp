@@ -3,6 +3,7 @@ package usecase
 import (
 	"backend/model"
 	"backend/repository"
+	"bytes"
 	"context"
 	"crypto/aes"
 	"crypto/cipher"
@@ -24,6 +25,8 @@ type BacklogUsecase interface {
 	GetProjects(ctx context.Context, userId, token, domain, refreshToken string) ([]model.Project, string, error)
 	GetTasks(ctx context.Context, userId, token, domain, refreshToken string) ([]model.Task, string, error)
 	GetComments(ctx context.Context, userId, token, taskId, domain, refreshToken string) ([]model.Comment, string, error)
+	GetAiComment(ctx context.Context, issueTitle, issueDescription string, existingComments []string) (string, error)
+	PostComment(ctx context.Context, userId, taskId, comment, token, domain, refreshToken string) (model.Comment, string, error)
 }
 
 type backlogUsecase struct {
@@ -219,6 +222,101 @@ func (b *backlogUsecase) GetComments(ctx context.Context, userId, token, taskId,
 	}
 
 	return comments, "", nil
+}
+
+func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDescription string, existingComments []string) (string, error) {
+	prompt := fmt.Sprintf("課題のタイトル: %s\n課題の説明: %s\n既存のコメント:\n%s\nこれに続く新しいコメントを生成してください。",
+		issueTitle,
+		issueDescription,
+		strings.Join(existingComments, "\n"))
+
+	url := "https://api.openai.com/v1/engines/gpt-4/completions"
+
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"prompt":      prompt,
+		"max_tokens":  150,
+		"temperature": 0.7,
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("JSONエンコーディングエラー: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", url, strings.NewReader(string(requestBody)))
+	if err != nil {
+		return "", fmt.Errorf("HTTPリクエスト作成エラー: %v", err)
+	}
+
+	apiKey := os.Getenv("OPENAI_SECRETKEY")
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("HTTPリクエスト送信エラー: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("レスポンス読み込みエラー: %v", err)
+	}
+
+	var response struct {
+		Choices []struct {
+			Text string `json:"text"`
+		} `json:"choices"`
+	}
+	if err := json.Unmarshal(body, &response); err != nil {
+		return "", fmt.Errorf("JSONデコーディングエラー: %v", err)
+	}
+
+	if len(response.Choices) > 0 {
+		return strings.TrimSpace(response.Choices[0].Text), nil
+	}
+
+	return "", fmt.Errorf("コメントが生成されませんでした")
+}
+
+func (b *backlogUsecase) PostComment(ctx context.Context, userId, taskId, comment, token, domain, refreshToken string) (model.Comment, string, error) {
+	reqURL := fmt.Sprintf("https://%s/api/v2/issues/%s/comments", domain, taskId)
+
+	commentData := map[string]string{"content": comment}
+	jsonData, err := json.Marshal(commentData)
+	if err != nil {
+		return model.Comment{}, "", fmt.Errorf("error marshaling comment data: %v", err)
+	}
+
+	resp, err := b.requestBacklogAPI(ctx, "POST", reqURL, token, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return model.Comment{}, "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
+		newToken, err := b.refreshAccessToken(ctx, domain, refreshToken)
+		if err != nil {
+			return model.Comment{}, "", err
+		}
+		resp, err = b.requestBacklogAPI(ctx, "POST", reqURL, newToken.AccessToken, bytes.NewBuffer(jsonData))
+		if err != nil {
+			return model.Comment{}, "", err
+		}
+		defer resp.Body.Close()
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return model.Comment{}, "", fmt.Errorf("failed to post comment, status code: %d", resp.StatusCode)
+	}
+
+	var postedComment model.Comment
+	if err := json.NewDecoder(resp.Body).Decode(&postedComment); err != nil {
+		return model.Comment{}, "", fmt.Errorf("error decoding comment response: %v", err)
+	}
+
+	return postedComment, "", nil
 }
 
 func (b *backlogUsecase) requestBacklogAPI(ctx context.Context, method, url, token string, body io.Reader) (*http.Response, error) {

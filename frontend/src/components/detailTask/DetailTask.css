@@ -15,12 +15,24 @@
     margin-right: 0.5rem;
 }
 
-.taskCreatedUsername {
-    font-size: 1.2rem;
+.createdUser {
+    display: flex;
+}
+
+.userImg {
+    height: 40px;
+    width: auto;
+}
+
+.createdUserInfo {
+    margin-left: 8px;
+}
+
+.createdUsername {
     font-weight: 700;
 }
 
-.taskCreatedDate {
+.createdDate {
     font-size: 0.9rem;
     color: #777;
 }
@@ -63,7 +75,7 @@
 }
 
 .taskDescription p {
-    margin: 1rem 0 1rem 0;
+    margin: 1rem 0 0rem 0;
 }
 
 .taskDescription h2 {
@@ -76,4 +88,127 @@
 .taskDescription h3 {
     line-height: 2.4rem;
     margin: 1rem 0;
+}
+
+.taskComments {
+    margin-top: 3rem;
+    padding-bottom: 6rem;
+}
+
+.commentLabel {
+    font-weight: 700;
+}
+
+.numberOfComment {
+    font-weight: 400;
+    color: #777;
+    margin-left: 0.3rem;
+}
+
+.commentDialog {
+    background-color: #ffffff;
+    border-radius: 4px;
+    border: 1px solid #c2c2c2;
+    margin: 1rem 0;
+}
+
+.commentDialog {
+    padding: 0;
+}
+
+.commentDialog li {
+    padding: 0 25px;
+}
+
+.innerList {
+    border-top: 1px solid #bdbdbd;
+}
+
+.listItem {
+    padding: 20px 0 25px 25px;
+}
+
+.commentContent {
+    margin-top: 1rem;
+}
+
+.commentEditor {
+    z-index: 600;
+    display: block;
+    background-color: #ffffff;
+    box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, .3);
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: calc(100% - 200px);
+    padding: 15px 0 9px;
+}
+
+.commentForm {
+    height: 100%;
+    margin-left: 50px;
+}
+
+.commentFormBody {
+    display: flex;
+    align-items: center;
+}
+
+.commentTextarea {
+    border: 1px solid #999;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-left: 15px;
+    padding: 8px;
+    height: 22px;
+    width: calc(100% - 200px);
+    resize: none;
+    font-size: 1rem;
+    cursor: text;
+    overflow-y: hidden;
+}
+
+.openEditor {
+    height: 137px;
+    overflow-y: auto;
+}
+
+.autoComment {
+    margin-left: 25px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    border: 1px solid #adadad;
+    background-color: #f5f5f5;
+}
+
+.autoComment>svg {
+    font-size: 30px !important;
+    color: #707070;
+}
+
+.commentButton {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.commentButton>button {
+    border: 1px solid #999;
+    border-radius: 5px;
+    padding: 1px 18px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-align: center;
+    min-width: 130px;
+    line-height: 2.2rem;
+    min-height: 2.2rem;
+    background-color: #e5e5e5;
+}
+
+.rightButton {
+    margin: 0 200px 0 10px;
+    background-color: #2c9a7a !important;
+    color: #ffffff;
+    border: 2px solid #2c9a7a;
 }
