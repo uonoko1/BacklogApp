@@ -232,7 +232,7 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 
 	fmt.Println("6")
 
-	url := "https://api.openai.com/v1/engines/gpt-4/completions"
+	url := "https://api.openai.com/v1/chat/completions"
 
 	fmt.Println("7")
 
