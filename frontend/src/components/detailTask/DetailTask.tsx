@@ -234,7 +234,9 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
                             {openEditor &&
                                 <>
                                     {aiLoading ?
-                                        <TailSpin color='#00BFFF' height={30} width={30} />
+                                        <div className='autoCommentLoading'>
+                                            <TailSpin color='#00BFFF' height={30} width={30} />
+                                        </div>
                                         :
                                         <button type='button' onClick={generateComment} className='autoComment'>
                                             <PsychologyIcon />

@@ -173,6 +173,10 @@
     overflow-y: auto;
 }
 
+.autoCommentLoading {
+    margin-left: 25px;
+}
+
 .autoComment {
     margin-left: 25px;
     border-radius: 50%;
