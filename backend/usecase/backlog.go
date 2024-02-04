@@ -223,13 +223,16 @@ func (b *backlogUsecase) GetComments(ctx context.Context, userId, token, taskId,
 func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDescription string, existingComments []string) (string, error) {
 	url := "https://api.openai.com/v1/chat/completions"
 
-	messages := []map[string]string{}
+	messages := []map[string]string{
+		{"role": "system", "content": fmt.Sprintf("課題のタイトル: %s", issueTitle)},
+		{"role": "system", "content": fmt.Sprintf("課題の説明: %s", issueDescription)},
+	}
 
 	for _, comment := range existingComments {
 		messages = append(messages, map[string]string{"role": "system", "content": comment})
 	}
 
-	messages = append(messages, map[string]string{"role": "user", "content": fmt.Sprintf("課題のタイトル: %s\n課題の説明: %s\nこれに続く新しいコメントを生成してください。", issueTitle, issueDescription)})
+	messages = append(messages, map[string]string{"role": "user", "content": "これに続く新しいコメントを生成してください。"})
 	fmt.Println("messages:", messages)
 
 	requestBody, err := json.Marshal(map[string]interface{}{
