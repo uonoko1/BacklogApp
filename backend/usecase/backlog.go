@@ -298,6 +298,7 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 	}
 
 	fmt.Println("17")
+	fmt.Println("response:", response)
 
 	if len(response.Choices) > 0 {
 		return strings.TrimSpace(response.Choices[0].Text), nil

@@ -201,8 +201,11 @@ func (c *backlogController) GetAiComment(ctx echo.Context) error {
 
 	generatedComment, err := c.u.GetAiComment(ctx.Request().Context(), req.IssueTitle, req.IssueDescription, req.ExistingComments)
 	if err != nil {
+		fmt.Println("err:", err)
 		return err
 	}
+
+	fmt.Println("1")
 
 	return ctx.String(http.StatusOK, generatedComment)
 }
@@ -213,20 +216,15 @@ func (c *backlogController) PostComment(ctx echo.Context) error {
 	if !ok {
 		return ctx.JSON(http.StatusInternalServerError, "ユーザー情報の取得に失敗しました")
 	}
-	fmt.Println("1")
 
 	var req request.Comment
 	if err := ctx.Bind(&req); err != nil {
 		return ctx.JSON(http.StatusBadRequest, "入力情報が誤っています。")
 	}
 
-	fmt.Println("2")
-
 	if !user.BacklogDomain.Valid {
 		return ctx.JSON(http.StatusBadRequest, "ユーザーのBacklogドメインが設定されていません")
 	}
-
-	fmt.Println("3")
 
 	backlogDomain := user.BacklogDomain.String
 
@@ -235,22 +233,16 @@ func (c *backlogController) PostComment(ctx echo.Context) error {
 	}
 	backlogRefreshToken := user.BacklogRefreshToken.String
 
-	fmt.Println("4")
-
 	token := ""
 	cookie, err := ctx.Cookie("backlog_token")
 	if err == nil {
 		token = cookie.Value
 	}
 
-	fmt.Println("5")
-
 	postedComment, newAccessToken, err := c.u.PostComment(ctx.Request().Context(), user.Id, req.TaskId, req.Comment, token, backlogDomain, backlogRefreshToken)
 	if err != nil {
 		return ctx.JSON(http.StatusUnauthorized, err.Error())
 	}
-
-	fmt.Println("19")
 
 	if newAccessToken != "" {
 		ctx.SetCookie(&http.Cookie{
@@ -262,8 +254,6 @@ func (c *backlogController) PostComment(ctx echo.Context) error {
 			Expires:  time.Now().Add(24 * time.Hour),
 		})
 	}
-
-	fmt.Println("20")
 
 	return ctx.JSON(http.StatusOK, postedComment)
 }
