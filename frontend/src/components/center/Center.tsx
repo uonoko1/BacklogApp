@@ -110,6 +110,12 @@ export default function Center() {
         setCheckedTaskStates(updatedCheckedStates);
     }, [tasks, favoriteTasks]);
 
+    useEffect(() => {
+        setSearchInput('');
+        if (projects) setDisplayProjects(projects);
+        if (tasks) setDisplayTasks(tasks);
+    }, [location])
+
     function sortByLatestDate(a: Task, b: Task) {
         const dateA = new Date(a.updated || a.created);
         const dateB = new Date(b.updated || b.created);
@@ -150,12 +156,6 @@ export default function Center() {
         setDisplayTasks(filterTasks);
         navigate('/tasks')
     }
-
-    useEffect(() => {
-        setSearchInput('');
-        if (projects) setDisplayProjects(projects);
-        if (tasks) setDisplayTasks(tasks);
-    }, [location])
 
     const isTaskDetailPage = () => {
         const parts = location.pathname.split('/');

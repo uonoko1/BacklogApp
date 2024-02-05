@@ -8,7 +8,7 @@
 .DetailTaskTitle {
     display: flex;
     align-items: center;
-    margin: 2rem 0 0.5rem 0;
+    margin-bottom: 0.5rem;
 }
 
 .backIcon {
