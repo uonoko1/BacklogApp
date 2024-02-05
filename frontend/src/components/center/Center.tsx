@@ -157,6 +157,11 @@ export default function Center() {
         if (tasks) setDisplayTasks(tasks);
     }, [location])
 
+    const isTaskDetailPage = () => {
+        const parts = location.pathname.split('/');
+        return parts.length === 3;
+    };
+
     return (
         <div className={`Center ${backlogOAuth ? 'AuthCenter' : ''}`}>
             {backlogOAuth ?
@@ -178,10 +183,12 @@ export default function Center() {
                 </>
                 :
                 <>
-                    <div className='SearchBox'>
-                        <SearchIcon />
-                        <input type='text' value={searchInput} onChange={(e) => handleSearch(e.target.value)} placeholder={placeholder()} className='SearchBoxInput' />
-                    </div>
+                    {!isTaskDetailPage() && (
+                        <div className='SearchBox'>
+                            <SearchIcon />
+                            <input type='text' value={searchInput} onChange={(e) => handleSearch(e.target.value)} placeholder={placeholder()} className='SearchBoxInput' />
+                        </div>
+                    )}
                     {path === 'projects' && (
                         <Projects
                             projects={displayProjects}
