@@ -16,7 +16,7 @@ export default function Sidebar() {
 
     useEffect(() => {
         const currentPath = location.pathname.split('/')[1];
-        if (currentPath !== 'tasks' && currentPath !== 'users' && currentPath !== 'board') {
+        if (currentPath !== 'tasks') {
             setPath('projects');
             return;
         }
@@ -36,14 +36,6 @@ export default function Sidebar() {
                 <li className={`${path === 'tasks' && 'selected'}`} onClick={() => navigate('/tasks')}>
                     <ConstructionIcon />
                     <p>課題</p>
-                </li>
-                <li className={`${path === 'users' && 'selected'}`} onClick={() => navigate('/users')}>
-                    <PersonIcon />
-                    <p>ユーザー</p>
-                </li>
-                <li className={`${path === 'board' && 'selected'}`} onClick={() => navigate('/board')}>
-                    <ChatIcon />
-                    <p>掲示板</p>
                 </li>
             </ul>
         </div>

@@ -78,17 +78,16 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
 
     const generateComment = async () => {
         if (!selectTask || !comments) return;
-
-        const data = {
-            issueTitle: selectTask.summary,
-            issueDescription: selectTask.description,
-            existingComments: sortCommentsByDate(comments).map(comment => comment.content),
-        };
-
         try {
             setAiLoading(true);
             const backlogUser = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/myself`);
-            console.log("backlogUser:", backlogUser.data)
+
+            const data = {
+                issueTitle: selectTask.summary,
+                issueDescription: selectTask.description,
+                existingComments: sortCommentsByDate(comments).map(comment => comment.content),
+                userName: backlogUser.data,
+            };
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/backlog/autoComment`, data);
             setInputComment(response.data);
         } catch (err) {

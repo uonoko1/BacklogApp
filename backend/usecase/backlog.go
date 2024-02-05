@@ -26,7 +26,7 @@ type BacklogUsecase interface {
 	GetTasks(ctx context.Context, userId, token, domain, refreshToken string) ([]model.Task, string, error)
 	GetComments(ctx context.Context, userId, token, taskId, domain, refreshToken string) ([]model.Comment, string, error)
 	GetMyself(ctx context.Context, userId, token, domain, refreshToken string) (string, string, error)
-	GetAiComment(ctx context.Context, issueTitle, issueDescription string, existingComments []string) (string, error)
+	GetAiComment(ctx context.Context, issueTitle, issueDescription string, existingComments []string, userName string) (string, error)
 	PostComment(ctx context.Context, userId, taskId, comment, token, domain, refreshToken string) (model.Comment, string, error)
 }
 
@@ -268,7 +268,7 @@ func (b *backlogUsecase) GetMyself(ctx context.Context, userId, token, domain, r
 	return userInfo.Name, "", nil
 }
 
-func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDescription string, existingComments []string) (string, error) {
+func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDescription string, existingComments []string, userName string) (string, error) {
 	url := "https://api.openai.com/v1/chat/completions"
 
 	messages := []map[string]string{
@@ -280,7 +280,8 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 		messages = append(messages, map[string]string{"role": "system", "content": comment})
 	}
 
-	messages = append(messages, map[string]string{"role": "user", "content": "これに続く新しいコメントを生成してください。"})
+	prompt := fmt.Sprintf("あなたは%sです。これに続く新しいコメントを生成してください。", userName)
+	messages = append(messages, map[string]string{"role": "user", "content": prompt})
 	fmt.Println("messages:", messages)
 
 	requestBody, err := json.Marshal(map[string]interface{}{

@@ -242,7 +242,7 @@ func (c *backlogController) GetAiComment(ctx echo.Context) error {
 		return err
 	}
 
-	generatedComment, err := c.u.GetAiComment(ctx.Request().Context(), req.IssueTitle, req.IssueDescription, req.ExistingComments)
+	generatedComment, err := c.u.GetAiComment(ctx.Request().Context(), req.IssueTitle, req.IssueDescription, req.ExistingComments, req.UserName)
 	if err != nil {
 		return err
 	}

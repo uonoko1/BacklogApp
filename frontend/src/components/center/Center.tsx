@@ -53,7 +53,6 @@ export default function Center() {
                     setDisplayProjects(response.data);
                     setFavoriteProjectList(favResponse.data)
                 } else if (path === 'tasks') {
-                    // console.log("tasks:", response.data);
                     setTasks(response.data);
                     setDisplayTasks(response.data);
                     setFavoriteTaskList(favResponse.data)
