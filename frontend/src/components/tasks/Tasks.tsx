@@ -105,7 +105,8 @@ export default function Tasks({ tasks, favoriteTasks, sortedByDate, checkedState
                                             <input
                                                 type="checkbox"
                                                 checked={!!checkedStates[task.id]}
-                                                onChange={(e) => { e.stopPropagation(); handleCheckBox(task.id) }}
+                                                onClick={(e) => e.stopPropagation()}
+                                                onChange={() => handleCheckBox(task.id)}
                                             />
                                             <p className='taskId'>{task.id}</p>
                                             <p className='taskKey'>{task.issueKey}</p>

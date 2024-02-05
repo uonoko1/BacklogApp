@@ -78,7 +78,8 @@ export default function Projects({ projects, favoriteProjects, checkedStates, se
                                 <input
                                     type="checkbox"
                                     checked={!!checkedStates[project.id]}
-                                    onChange={(e) => { e.stopPropagation(); handleCheckBox(project.id) }}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onChange={() => handleCheckBox(project.id)}
                                 />
                                 <p className='projectId'>{project.id}</p>
                                 <p className='projectKey'>{project.projectKey}</p>
