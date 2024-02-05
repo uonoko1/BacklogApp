@@ -54,6 +54,7 @@ func (r *authRepository) Create(ctx context.Context, user *model.User) (*model.U
 	query := `INSERT INTO users (userid, username, email, password) VALUES (?, ?, ?, ?)`
 	_, err := execer.ExecContext(ctx, query, user.UserId, user.Username, user.Email, user.Password)
 	if err != nil {
+		fmt.Println("1")
 		return nil, err
 	}
 
@@ -63,6 +64,7 @@ func (r *authRepository) Create(ctx context.Context, user *model.User) (*model.U
 	var newUser model.User
 	err = row.Scan(&newUser.Id, &newUser.UserId, &newUser.Username, &newUser.Email, &newUser.Password)
 	if err != nil {
+		fmt.Println("2")
 		return nil, err
 	}
 
