@@ -4,6 +4,9 @@ import (
 	"backend/controller/request"
 	"backend/model"
 	"backend/usecase"
+	"bytes"
+	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -256,6 +259,15 @@ func (c *backlogController) PostComment(ctx echo.Context) error {
 	if !ok {
 		return ctx.JSON(http.StatusInternalServerError, "ユーザー情報の取得に失敗しました")
 	}
+
+	body, err := io.ReadAll(ctx.Request().Body)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "リクエストボディの読み取りに失敗しました")
+	}
+
+	fmt.Printf("Received request body: %s\n", string(body))
+
+	ctx.Request().Body = io.NopCloser(bytes.NewBuffer(body))
 
 	var req request.Comment
 	if err := ctx.Bind(&req); err != nil {
