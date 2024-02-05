@@ -5,11 +5,15 @@ import { UserType } from '../types/User';
 interface AuthContextType {
     user: UserType | null;
     setUser: Dispatch<SetStateAction<UserType | null>>;
+    backlogUsername: string;
+    setBacklogUsername: Dispatch<SetStateAction<string>>
 }
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
-    setUser: () => { }
+    setUser: () => { },
+    backlogUsername: '',
+    setBacklogUsername: () => { },
 });
 
 export function useAuth() {
@@ -18,6 +22,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<UserType | null>(null);
+    const [backlogUsername, setBacklogUsername] = useState('');
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -31,8 +36,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fetchUser();
     }, [])
 
+    useEffect(() => {
+        const fetchBacklogUsername = async () => {
+            try {
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/myself`);
+                setBacklogUsername(response.data);
+            } catch (err) {
+                console.log("err:", err);
+            }
+        }
+
+        if (user?.backlog_oauth) fetchBacklogUsername();
+    }, [user])
+
     return (
-        <AuthContext.Provider value={{ user, setUser }}>
+        <AuthContext.Provider value={{ user, setUser, backlogUsername, setBacklogUsername }}>
             {children}
         </AuthContext.Provider>
     );

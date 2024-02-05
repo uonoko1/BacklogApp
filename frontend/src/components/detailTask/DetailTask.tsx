@@ -7,12 +7,14 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { TailSpin } from 'react-loader-spinner';
+import { useAuth } from '../../state/AuthContext';
 
 interface DetailTaskProps {
     tasks: Task[];
 }
 
 export default function DetailTask({ tasks }: DetailTaskProps) {
+    const { backlogUsername } = useAuth();
     const [selectTask, setSelectTask] = useState<Task | null>(null);
     const taskId = useParams().taskId;
     const navigate = useNavigate();
@@ -77,17 +79,18 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
     }
 
     const generateComment = async () => {
-        if (!selectTask || !comments) return;
+        if (!selectTask || !comments || !backlogUsername) return;
         try {
             setAiLoading(true);
-            const backlogUser = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/myself`);
+            // const backlogUser = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/myself`);
 
             const data = {
                 issueTitle: selectTask.summary,
                 issueDescription: selectTask.description,
                 existingComments: sortCommentsByDate(comments).map(comment => comment.content),
-                userName: backlogUser.data,
+                userName: backlogUsername,
             };
+            console.log("ユーザー名:", data.userName);
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/backlog/autoComment`, data);
             setInputComment(response.data);
         } catch (err) {
@@ -145,7 +148,7 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
                         </div>
                     </div>
                 </div>
-                <div className='taskComments'>
+                <div className={`taskComments ${openEditor ? 'commentsMoveUp' : ''}`}>
                     <p className='commentLabel'>コメント<span className='numberOfComment'>({comments ? comments.length : 0})</span></p>
                     {comments && comments.length > 0 &&
                         <ul className='commentDialog'>

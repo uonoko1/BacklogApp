@@ -95,6 +95,10 @@
     padding-bottom: 6rem;
 }
 
+.commentsMoveUp {
+    padding-bottom: 18rem;
+}
+
 .commentLabel {
     font-weight: 700;
 }
