@@ -59,6 +59,7 @@ func (r *authRepository) Create(ctx context.Context, user *model.User) (*model.U
 
 	query = `SELECT id, userid, username, email, password FROM users WHERE userid = ?`
 	row := r.db.QueryRowContext(ctx, query, user.UserId)
+
 	var newUser model.User
 	err = row.Scan(&newUser.Id, &newUser.UserId, &newUser.Username, &newUser.Email, &newUser.Password)
 	if err != nil {
