@@ -41,7 +41,7 @@ func NewBacklogUsecase(r repository.BacklogRepository) BacklogUsecase {
 func (b *backlogUsecase) GetAccessTokenWithCode(ctx context.Context, code string, state string) (string, error) {
 	parts := strings.SplitN(state, "|", 2)
 	if len(parts) < 2 {
-		return "", errors.New("invalid state format: expected 'domain|encryptedUserID'")
+		return "", errors.New("無効なstate形式: 'domain|encryptedUserID'が期待されます")
 	}
 	domain := parts[1]
 	encryptedUserID := parts[0]
@@ -116,17 +116,17 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, "", fmt.Errorf("failed to get projects, status code: %d", resp.StatusCode)
+		return nil, "", fmt.Errorf("projectsの取得に失敗しました, status code: %d", resp.StatusCode)
 	}
 
 	var projects []model.Project
 	if err := json.NewDecoder(resp.Body).Decode(&projects); err != nil {
-		return nil, "", fmt.Errorf("error decoding projects response: %v", err)
+		return nil, "", fmt.Errorf("projectsのデコードに失敗しました: %v", err)
 	}
 
 	if newToken != nil && newToken.RefreshToken != "" {
 		if err := b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
-			return nil, "", fmt.Errorf("failed to update refresh token: %v", err)
+			return nil, "", fmt.Errorf("refresh tokenの更新に失敗しました: %v", err)
 		}
 
 		return projects, newToken.AccessToken, nil
@@ -160,17 +160,17 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, "", fmt.Errorf("failed to get tasks, status code: %d", resp.StatusCode)
+		return nil, "", fmt.Errorf("tasksの取得に失敗しました, status code: %d", resp.StatusCode)
 	}
 
 	var tasks []model.Task
 	if err := json.NewDecoder(resp.Body).Decode(&tasks); err != nil {
-		return nil, "", fmt.Errorf("error decoding projects response: %v", err)
+		return nil, "", fmt.Errorf("projectsのデコードに失敗しました: %v", err)
 	}
 
 	if newToken != nil && newToken.RefreshToken != "" {
 		if err := b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
-			return nil, "", fmt.Errorf("failed to update refresh token: %v", err)
+			return nil, "", fmt.Errorf("refresh tokenの更新に失敗しました: %v", err)
 		}
 
 		return tasks, newToken.AccessToken, nil
@@ -204,17 +204,17 @@ func (b *backlogUsecase) GetComments(ctx context.Context, userId, token, taskId,
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, "", fmt.Errorf("failed to get comments, status code: %d", resp.StatusCode)
+		return nil, "", fmt.Errorf("commentsの取得に失敗しました, status code: %d", resp.StatusCode)
 	}
 
 	var comments []model.Comment
 	if err := json.NewDecoder(resp.Body).Decode(&comments); err != nil {
-		return nil, "", fmt.Errorf("error decoding comments response: %v", err)
+		return nil, "", fmt.Errorf("commentsのデコードに失敗しました: %v", err)
 	}
 
 	if newToken != nil && newToken.RefreshToken != "" {
 		if err := b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
-			return nil, "", fmt.Errorf("failed to update refresh token: %v", err)
+			return nil, "", fmt.Errorf("refresh tokenの更新に失敗しました: %v", err)
 		}
 		return comments, newToken.AccessToken, nil
 	}
@@ -248,7 +248,7 @@ func (b *backlogUsecase) GetMyself(ctx context.Context, userId, token, domain, r
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return "", "", fmt.Errorf("failed to get user info, status code: %d", resp.StatusCode)
+		return "", "", fmt.Errorf("userの取得に失敗しました, status code: %d", resp.StatusCode)
 	}
 
 	var userInfo struct {
@@ -260,7 +260,7 @@ func (b *backlogUsecase) GetMyself(ctx context.Context, userId, token, domain, r
 
 	if newToken != nil && newToken.RefreshToken != "" {
 		if err := b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
-			return "", "", fmt.Errorf("failed to update refresh token: %v", err)
+			return "", "", fmt.Errorf("refresh tokenの更新に失敗しました: %v", err)
 		}
 		return userInfo.Name, newToken.AccessToken, nil
 	}
@@ -335,7 +335,7 @@ func (b *backlogUsecase) PostComment(ctx context.Context, userId, taskId, commen
 	commentData := map[string]string{"content": comment}
 	jsonData, err := json.Marshal(commentData)
 	if err != nil {
-		return model.Comment{}, "", fmt.Errorf("error marshaling comment data: %v", err)
+		return model.Comment{}, "", fmt.Errorf("comment dataのマーシャリングに失敗しました: %v", err)
 	}
 
 	resp, err := b.requestBacklogAPI(ctx, "POST", reqURL, token, bytes.NewBuffer(jsonData))
@@ -358,12 +358,12 @@ func (b *backlogUsecase) PostComment(ctx context.Context, userId, taskId, commen
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return model.Comment{}, "", fmt.Errorf("failed to post comment, status code: %d", resp.StatusCode)
+		return model.Comment{}, "", fmt.Errorf("commentの投稿に失敗しました, status code: %d", resp.StatusCode)
 	}
 
 	var postedComment model.Comment
 	if err := json.NewDecoder(resp.Body).Decode(&postedComment); err != nil {
-		return model.Comment{}, "", fmt.Errorf("error decoding comment response: %v", err)
+		return model.Comment{}, "", fmt.Errorf("commentのデコードに失敗しました: %v", err)
 	}
 
 	return postedComment, "", nil
@@ -403,7 +403,7 @@ func (b *backlogUsecase) refreshAccessToken(ctx context.Context, domain, refresh
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to refresh access token, status code: %d", resp.StatusCode)
+		return nil, fmt.Errorf("access tokenの更新に失敗しました, status code: %d", resp.StatusCode)
 	}
 
 	var tokenResponse model.TokenResponse
@@ -415,42 +415,34 @@ func (b *backlogUsecase) refreshAccessToken(ctx context.Context, domain, refresh
 }
 
 func decryptUserID(encryptedUserID string) (string, error) {
-	// .envファイルから秘密鍵を取得（ヘキサデシマル形式の文字列）
 	hexKey := os.Getenv("SECRETKEY3")
 
-	// ヘキサデシマル文字列をバイト配列にデコード
 	key, err := hex.DecodeString(hexKey)
 	if err != nil {
-		return "", fmt.Errorf("failed to decode hex key: %w", err)
+		return "", err
 	}
 
-	// Base64エンコードされた暗号テキストをデコード
 	ciphertext, err := base64.URLEncoding.DecodeString(encryptedUserID)
 	if err != nil {
 		return "", err
 	}
 
-	// AES暗号を初期化
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return "", err
 	}
 
-	// GCMモードを初期化
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return "", err
 	}
 
-	// ノンスのサイズを確認
 	if len(ciphertext) < gcm.NonceSize() {
-		return "", errors.New("ciphertext too short")
+		return "", errors.New("暗号文が短すぎます")
 	}
 
-	// ノンスと暗号テキストを分離
 	nonce, ciphertext := ciphertext[:gcm.NonceSize()], ciphertext[gcm.NonceSize():]
 
-	// 暗号テキストを復号
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
 		return "", err

@@ -57,7 +57,7 @@ func (a *authUsecase) AuthByLogin(ctx context.Context, email, password string) (
 
 	encryptedUserID, err := EncryptUserID(user.Id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to encrypt user ID: %w", err)
+		return nil, fmt.Errorf("user IDのencryptに失敗しました: %w", err)
 	}
 
 	backlogOAuth := user.BacklogRefreshToken.Valid
@@ -146,7 +146,7 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 
 		encryptedUserID, err := EncryptUserID(createdUser.Id)
 		if err != nil {
-			fmt.Println("failed to encrypt user ID: %w", err)
+			fmt.Println("user IDのencryptに失敗しました: %w", err)
 			return nil, err
 		}
 
@@ -170,7 +170,7 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 
 	userWithToken, ok := result.(*model.UserWithToken)
 	if !ok {
-		return nil, fmt.Errorf("failed to cast result to *model.UserWithToken")
+		return nil, fmt.Errorf("*model.UserWithTokenへのキャストに失敗しました")
 	}
 
 	return userWithToken, nil
@@ -240,35 +240,29 @@ func NullStringToString(ns sql.NullString) string {
 }
 
 func EncryptUserID(userID string) (string, error) {
-	// .envファイルから秘密鍵を取得（ヘキサデシマル形式の文字列）
 	hexKey := os.Getenv("SECRETKEY3")
 
-	// ヘキサデシマル文字列をバイト配列にデコード
 	key, err := hex.DecodeString(hexKey)
 	if err != nil {
-		return "", fmt.Errorf("failed to decode hex key: %w", err)
+		return "", fmt.Errorf("16進数キーのデコードに失敗しました: %w", err)
 	}
 
-	// AES暗号を初期化
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return "", fmt.Errorf("failed to create cipher: %w", err)
+		return "", fmt.Errorf("暗号化キーの生成に失敗しました: %w", err)
 	}
 
-	// GCMモードを初期化
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		return "", fmt.Errorf("failed to create GCM: %w", err)
+		return "", fmt.Errorf("GCMの作成に失敗しました: %w", err)
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", fmt.Errorf("failed to generate nonce: %w", err)
+		return "", fmt.Errorf("ノンスの生成に失敗しました: %w", err)
 	}
 
-	// ユーザーIDを暗号化
 	ciphertext := gcm.Seal(nonce, nonce, []byte(userID), nil)
-	// Base64エンコーディングして返却
 	return base64.URLEncoding.EncodeToString(ciphertext), nil
 }
 
@@ -301,12 +295,12 @@ func (u *authUsecase) generateRefreshTokens(email string) (refreshToken string, 
 	return refreshToken, nil
 }
 
-var ErrTokenExpired = errors.New("token is expired")
+var ErrTokenExpired = errors.New("tokenが期限切れです")
 
 func (u *authUsecase) decodeToken(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("予期しない署名方法です: %v", token.Header["alg"])
 		}
 
 		return []byte(config.JwtAccessTokenSecret), nil
@@ -316,11 +310,9 @@ func (u *authUsecase) decodeToken(tokenString string) (string, error) {
 		var ve *jwt.ValidationError
 		if errors.As(err, &ve) {
 			if ve.Errors&jwt.ValidationErrorExpired != 0 {
-				// トークンが期限切れの場合
 				return "", ErrTokenExpired
 			}
 		}
-		// その他のエラー
 		return "", err
 	}
 
@@ -328,6 +320,6 @@ func (u *authUsecase) decodeToken(tokenString string) (string, error) {
 		email := claims["email"].(string)
 		return email, nil
 	} else {
-		return "", fmt.Errorf("invalid token")
+		return "", fmt.Errorf("tokenが不正です")
 	}
 }

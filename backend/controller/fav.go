@@ -32,7 +32,7 @@ func (c *favController) AddProjectToFavoriteList(ctx echo.Context) error {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid ID format",
+			"error": "ID formatが不正です",
 		})
 	}
 
@@ -63,7 +63,7 @@ func (c *favController) RemoveProjectFromFavoriteList(ctx echo.Context) error {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid ID format",
+			"error": "ID formatが不正です",
 		})
 	}
 
@@ -94,7 +94,7 @@ func (c *favController) AddTaskToFavoriteList(ctx echo.Context) error {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid ID format",
+			"error": "ID formatが不正です",
 		})
 	}
 
@@ -125,7 +125,7 @@ func (c *favController) RemoveTaskFromFavoriteList(ctx echo.Context) error {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid ID format",
+			"error": "ID formatが不正です",
 		})
 	}
 

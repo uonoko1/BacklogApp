@@ -81,7 +81,7 @@ func (c *authController) AuthByToken(ctx echo.Context) error {
 				"code":  "token_expired",
 			})
 		}
-		// その他の認証エラー
+
 		return ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
 			"error": err.Error(),
 			"code":  "auth_error",

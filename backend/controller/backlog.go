@@ -192,7 +192,7 @@ func (c *backlogController) GetComments(ctx echo.Context) error {
 
 	_, err := strconv.Atoi(taskIdStr)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid task ID"})
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "task IDが不正です"})
 	}
 
 	user, ok := tempUser.(*model.User)
