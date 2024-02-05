@@ -98,15 +98,18 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
     }
 
     const onSubmit = async () => {
-        if (!inputComment) return;
+        if (!inputComment || !selectTask) return;
+        console.log("inputComment:", inputComment);
+        console.log("selectTask.id:", selectTask.id);
         setIsLoading(true);
         try {
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/backlog/comment/submit`, {
-                taskId: selectTask?.id,
+                taskId: selectTask.id,
                 comment: inputComment
             })
             setComments(prevComments => [...(prevComments || []), response.data]);
             setInputComment('');
+            setOpenEditor(false);
         } catch (err) {
             console.log("err:", err);
         } finally {
