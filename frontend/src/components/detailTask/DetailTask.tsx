@@ -88,6 +88,7 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
         try {
             setAiLoading(true);
             const backlogUser = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/myself`);
+            console.log("backlogUser:", backlogUser.data)
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/backlog/autoComment`, data);
             setInputComment(response.data);
         } catch (err) {
