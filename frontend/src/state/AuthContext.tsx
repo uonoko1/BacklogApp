@@ -28,7 +28,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             try {
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/auth/user`);
                 setUser(response.data);
-                console.log(response.data)
             } catch (err) {
                 console.log(err)
             }
