@@ -45,7 +45,6 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
                 setIsLoading(true);
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/comments/${selectTask.id}`);
                 setComments(response.data);
-                // console.log('コメント一覧:', response.data)
             } catch (err) {
                 console.log('err:', err);
             } finally {
@@ -82,7 +81,6 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
         if (!selectTask || !comments || !backlogUsername) return;
         try {
             setAiLoading(true);
-            // const backlogUser = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/myself`);
 
             const data = {
                 issueTitle: selectTask.summary,
@@ -90,7 +88,6 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
                 existingComments: sortCommentsByDate(comments).map(comment => comment.content),
                 userName: backlogUsername,
             };
-            console.log("ユーザー名:", data.userName);
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/backlog/autoComment`, data);
             setInputComment(response.data);
         } catch (err) {

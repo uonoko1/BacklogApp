@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import './Tasks.css'
 import { FavoriteTask, Task } from '../../types/Backlog'
 import axios from 'axios';
