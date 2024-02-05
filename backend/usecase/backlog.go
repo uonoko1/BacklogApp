@@ -282,7 +282,6 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 
 	prompt := fmt.Sprintf("あなたは%sです。これに続く新しいコメントを生成してください。", userName)
 	messages = append(messages, map[string]string{"role": "user", "content": prompt})
-	fmt.Println("messages:", messages)
 
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"model":    "gpt-4",
