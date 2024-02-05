@@ -13,4 +13,5 @@ func BacklogRoutes(e *echo.Echo, backlogController controller.BacklogController,
 	e.GET("/api/backlog/comments/:taskId", backlogController.GetComments, authMiddleware)
 	e.POST("/api/backlog/autoComment", backlogController.GetAiComment, authMiddleware)
 	e.POST("/api/backlog/comment/submit", backlogController.PostComment, authMiddleware)
+	e.GET("/api/backlog/myself", backlogController.GetMyself, authMiddleware)
 }

@@ -13,60 +13,6 @@ interface DetailTaskProps {
 }
 
 export default function DetailTask({ tasks }: DetailTaskProps) {
-    // const a: Comment =
-    // {
-    //     id: 217473568,
-    //     projectId: 196134,
-    //     issueId: 39086535,
-    //     content: '@Tatsuru Wakimoto \n早速のご回答ありがとうございます！\n先ほど添付の箇所をドキュメントで確認し、理解いたしました。\n\nサンプル要件をいただいたところ恐縮ですが、\n今回はお言葉に甘えてプロジェクト一覧・課題一覧の取得をするアプリケーションで開発させていただきます。\n\n引き続き不明点が生じましたらご相談させていただければと存じますので、\n何卒よろしくお願いいたします。',
-    //     changeLog: null, // nullを明示的に設定
-    //     createdUser: {
-    //         id: 570826,
-    //         userId: '*1NhzVopKiQ',
-    //         name: '酒井大地',
-    //         roleType: 2,
-    //         lang: 'ja',
-    //         nulabAccount: {
-    //             nulabId: 'Prm9ZD9DQD5snNWcSYSwZiQoA9WFBUEa2ySznrSnSQRhdC2X8G',
-    //             name: 'admin',
-    //             uniqueId: 'admin'
-    //         },
-    //         mailAddress: 'eguchi@nulab.example',
-    //         lastLoginTime: '2022-09-01T06:35:39Z'
-    //     },
-    //     created: '2024-02-01T07:09:35Z',
-    //     updated: '2024-02-01T07:09:35Z',
-    //     stars: [], // 空の配列を設定
-    //     notifications: [], // 空の配列を設定
-    // };
-    // const b: Comment =
-    // {
-    //     id: 217466125,
-    //     projectId: 196134,
-    //     issueId: 39086535,
-    //     content: '@酒井大地 \n回答としては、更新情報の取得を想定しておりましたので、\n下記のURLの説明にレスポンス説明にtypeの内容が記載しているので、文字列に置き換えて頂く事を想定していました。\ndeveloper.nulab.com/ja/docs/backlog/api/2/get-recent-updates/#\n\nこの部分ですね。\n![image][pasted-2024.02.01-15.35.54.png]\n\nただし、プロジェクト一覧・課題一覧を取得する場合は不要ですので、そのまま進めて頂いてかまいません。:blush: ',
-    //     changeLog: null, // nullを明示的に設定
-    //     createdUser: {
-    //         id: 564045,
-    //         userId: '',
-    //         name: 'Tatsuru Wakimoto',
-    //         roleType: 2,
-    //         lang: 'ja',
-    //         nulabAccount: {
-    //             nulabId: '別のNulabId',
-    //             name: 'Tatsuru Wakimoto',
-    //             uniqueId: '別のUniqueId'
-    //         },
-    //         mailAddress: 'tatsuru@example.com',
-    //         lastLoginTime: '2024-01-01T00:00:00Z'
-    //     },
-    //     created: '2024-02-01T06:41:39Z',
-    //     updated: '2024-02-01T06:41:39Z',
-    //     stars: [], // 空の配列を設定
-    //     notifications: [], // 空の配列を設定
-    // };
-
-
     const [selectTask, setSelectTask] = useState<Task | null>(null);
     const taskId = useParams().taskId;
     const navigate = useNavigate();
@@ -141,6 +87,7 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
 
         try {
             setAiLoading(true);
+            const backlogUser = await axios.get(`${process.env.REACT_APP_API_URL}/api/backlog/myself`);
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/backlog/autoComment`, data);
             setInputComment(response.data);
         } catch (err) {

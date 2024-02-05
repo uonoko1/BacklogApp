@@ -18,6 +18,7 @@ type BacklogController interface {
 	GetComments(ctx echo.Context) error
 	GetAiComment(ctx echo.Context) error
 	PostComment(ctx echo.Context) error
+	GetMyself(ctx echo.Context) error
 }
 
 type backlogController struct {
@@ -140,6 +141,49 @@ func (c *backlogController) GetTasks(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, tasks)
+}
+
+func (c *backlogController) GetMyself(ctx echo.Context) error {
+	tempUser := ctx.Get("user")
+	user, ok := tempUser.(*model.User)
+	if !ok {
+		return ctx.JSON(http.StatusInternalServerError, "ユーザー情報の取得に失敗しました")
+	}
+
+	if !user.BacklogDomain.Valid {
+		return ctx.JSON(http.StatusBadRequest, "ユーザーのBacklogドメインが設定されていません")
+	}
+
+	backlogDomain := user.BacklogDomain.String
+
+	if !user.BacklogRefreshToken.Valid {
+		return ctx.JSON(http.StatusBadRequest, "ユーザーのBacklogリフレッシュトークンが設定されていません")
+	}
+	backlogRefreshToken := user.BacklogRefreshToken.String
+
+	token := ""
+	cookie, err := ctx.Cookie("backlog_token")
+	if err == nil {
+		token = cookie.Value
+	}
+
+	username, newAccessToken, err := c.u.GetMyself(ctx.Request().Context(), user.Id, token, backlogDomain, backlogRefreshToken)
+	if err != nil {
+		return ctx.JSON(http.StatusUnauthorized, err.Error())
+	}
+
+	if newAccessToken != "" {
+		ctx.SetCookie(&http.Cookie{
+			Name:     "backlog_token",
+			Value:    newAccessToken,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   true,
+			Expires:  time.Now().Add(24 * time.Hour),
+		})
+	}
+
+	return ctx.String(http.StatusOK, username)
 }
 
 func (c *backlogController) GetComments(ctx echo.Context) error {
