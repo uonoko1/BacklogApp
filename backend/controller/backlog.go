@@ -199,7 +199,37 @@ func (c *backlogController) GetAiComment(ctx echo.Context) error {
 		return err
 	}
 
-	generatedComment, err := c.u.GetAiComment(ctx.Request().Context(), req.IssueTitle, req.IssueDescription, req.ExistingComments)
+	tempUser := ctx.Get("user")
+	taskIdStr := ctx.Param("taskId")
+
+	_, err := strconv.Atoi(taskIdStr)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid task ID"})
+	}
+
+	user, ok := tempUser.(*model.User)
+	if !ok {
+		return ctx.JSON(http.StatusInternalServerError, "ユーザー情報の取得に失敗しました")
+	}
+
+	if !user.BacklogDomain.Valid {
+		return ctx.JSON(http.StatusBadRequest, "ユーザーのBacklogドメインが設定されていません")
+	}
+
+	backlogDomain := user.BacklogDomain.String
+
+	if !user.BacklogRefreshToken.Valid {
+		return ctx.JSON(http.StatusBadRequest, "ユーザーのBacklogリフレッシュトークンが設定されていません")
+	}
+	backlogRefreshToken := user.BacklogRefreshToken.String
+
+	token := ""
+	cookie, err := ctx.Cookie("backlog_token")
+	if err == nil {
+		token = cookie.Value
+	}
+
+	generatedComment, err := c.u.GetAiComment(ctx.Request().Context(), user.Id, token, req.IssueTitle, req.IssueDescription, backlogDomain, backlogRefreshToken, req.ExistingComments)
 	if err != nil {
 		fmt.Println("err:", err)
 		return err

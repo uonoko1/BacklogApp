@@ -25,7 +25,7 @@ type BacklogUsecase interface {
 	GetProjects(ctx context.Context, userId, token, domain, refreshToken string) ([]model.Project, string, error)
 	GetTasks(ctx context.Context, userId, token, domain, refreshToken string) ([]model.Task, string, error)
 	GetComments(ctx context.Context, userId, token, taskId, domain, refreshToken string) ([]model.Comment, string, error)
-	GetAiComment(ctx context.Context, issueTitle, issueDescription string, existingComments []string) (string, error)
+	GetAiComment(ctx context.Context, userId, token, issueTitle, issueDescription, domain, refreshToken string, existingComments []string) (string, error)
 	PostComment(ctx context.Context, userId, taskId, comment, token, domain, refreshToken string) (model.Comment, string, error)
 }
 
@@ -102,7 +102,6 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
 		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
 			return nil, "", err
@@ -146,7 +145,6 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
 		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
 			return nil, "", err
@@ -188,7 +186,6 @@ func (b *backlogUsecase) GetComments(ctx context.Context, userId, token, taskId,
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
 		newToken, err := b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
 			return nil, "", err
@@ -220,7 +217,41 @@ func (b *backlogUsecase) GetComments(ctx context.Context, userId, token, taskId,
 	return comments, "", nil
 }
 
-func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDescription string, existingComments []string) (string, error) {
+func (b *backlogUsecase) GetAiComment(ctx context.Context, userId, token, issueTitle, issueDescription, domain, refreshToken string, existingComments []string) (string, error) {
+	reqURL := fmt.Sprintf("https://%s/api/v2/users/myself", domain)
+
+	resp, err := b.requestBacklogAPI(ctx, "GET", reqURL, token, nil)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		newToken, err := b.refreshAccessToken(ctx, domain, refreshToken)
+		if err != nil {
+			return "", err
+		}
+		resp, err = b.requestBacklogAPI(ctx, "GET", reqURL, newToken.AccessToken, nil)
+		if err != nil {
+			return "", err
+		}
+		defer resp.Body.Close()
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to get user info, status code: %d", resp.StatusCode)
+	}
+
+	var userInfo struct {
+		Name string `json:"name"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
+		return "", fmt.Errorf("JSONデコーディングエラー: %v", err)
+	}
+
+	userName := userInfo.Name
+
 	url := "https://api.openai.com/v1/chat/completions"
 
 	messages := []map[string]string{
@@ -232,8 +263,8 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 		messages = append(messages, map[string]string{"role": "system", "content": comment})
 	}
 
-	messages = append(messages, map[string]string{"role": "user", "content": "これに続く新しいコメントを生成してください。"})
-	fmt.Println("messages:", messages)
+	prompt := fmt.Sprintf("あなたは%sです。これに続く新しいコメントを生成してください。", userName)
+	messages = append(messages, map[string]string{"role": "user", "content": prompt})
 
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"model":    "gpt-4",
@@ -253,7 +284,7 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err = client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("HTTPリクエスト送信エラー: %v", err)
 	}
@@ -296,7 +327,6 @@ func (b *backlogUsecase) PostComment(ctx context.Context, userId, taskId, commen
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
 		newToken, err := b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
 			return model.Comment{}, "", err
