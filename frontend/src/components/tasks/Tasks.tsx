@@ -78,7 +78,7 @@ export default function Tasks({ tasks, favoriteTasks, sortedByDate, checkedState
                                 {sortedFavoriteTasks.map((task) => {
                                     return (
                                         <li key={task.id} onClick={() => handleSelectTask(task)}>
-                                            <HighlightOffIcon className='deleteIcon' onClick={() => handleCheckBox(task.id)} />
+                                            <HighlightOffIcon className='deleteIcon' onClick={(e) => { e.stopPropagation(); handleCheckBox(task.id) }} />
                                             <p className='taskId'>{task.id}</p>
                                             <p className='taskKey'>{task.issueKey}</p>
                                             <p className='taskName'>{task.summary}</p>
@@ -105,7 +105,7 @@ export default function Tasks({ tasks, favoriteTasks, sortedByDate, checkedState
                                             <input
                                                 type="checkbox"
                                                 checked={!!checkedStates[task.id]}
-                                                onChange={() => handleCheckBox(task.id)}
+                                                onChange={(e) => { e.stopPropagation(); handleCheckBox(task.id) }}
                                             />
                                             <p className='taskId'>{task.id}</p>
                                             <p className='taskKey'>{task.issueKey}</p>

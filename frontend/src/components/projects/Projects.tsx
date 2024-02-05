@@ -55,7 +55,7 @@ export default function Projects({ projects, favoriteProjects, checkedStates, se
                     {favoriteProjects.map((project) => {
                         return (
                             <li key={project.id} onClick={() => handleClickProject(project.id)}>
-                                <HighlightOffIcon className='deleteIcon' onClick={() => handleCheckBox(project.id)} />
+                                <HighlightOffIcon className='deleteIcon' onClick={(e) => { e.stopPropagation(); handleCheckBox(project.id) }} />
                                 <p className='projectId'>{project.id}</p>
                                 <p className='projectKey'>{project.projectKey}</p>
                                 <p className='projectName'>{project.name}</p>
@@ -78,7 +78,7 @@ export default function Projects({ projects, favoriteProjects, checkedStates, se
                                 <input
                                     type="checkbox"
                                     checked={!!checkedStates[project.id]}
-                                    onChange={() => handleCheckBox(project.id)}
+                                    onChange={(e) => { e.stopPropagation(); handleCheckBox(project.id) }}
                                 />
                                 <p className='projectId'>{project.id}</p>
                                 <p className='projectKey'>{project.projectKey}</p>
