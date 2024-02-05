@@ -343,7 +343,7 @@ func (b *backlogUsecase) PostComment(ctx context.Context, userId, taskId, commen
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusUnauthorized {
+	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
 		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
