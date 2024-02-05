@@ -102,7 +102,7 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode == http.StatusUnauthorized {
 		resp.Body.Close()
 		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
@@ -146,7 +146,7 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode == http.StatusUnauthorized {
 		resp.Body.Close()
 		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
@@ -190,7 +190,7 @@ func (b *backlogUsecase) GetComments(ctx context.Context, userId, token, taskId,
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode == http.StatusUnauthorized {
 		resp.Body.Close()
 		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
@@ -233,7 +233,7 @@ func (b *backlogUsecase) GetMyself(ctx context.Context, userId, token, domain, r
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode == http.StatusUnauthorized {
 		resp.Body.Close()
 		newToken, err := b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
