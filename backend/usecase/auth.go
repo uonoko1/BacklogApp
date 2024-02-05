@@ -57,7 +57,6 @@ func (a *authUsecase) AuthByLogin(ctx context.Context, email, password string) (
 
 	encryptedUserID, err := EncryptUserID(user.Id)
 	if err != nil {
-		// EncryptUserIDからのエラーを処理
 		return nil, fmt.Errorf("failed to encrypt user ID: %w", err)
 	}
 
@@ -147,7 +146,6 @@ func (a *authUsecase) Create(ctx context.Context, user *model.User) (*model.User
 
 		encryptedUserID, err := EncryptUserID(createdUser.Id)
 		if err != nil {
-			// EncryptUserIDからのエラーを処理
 			fmt.Println("failed to encrypt user ID: %w", err)
 			return nil, err
 		}

@@ -25,7 +25,7 @@ type BacklogUsecase interface {
 	GetProjects(ctx context.Context, userId, token, domain, refreshToken string) ([]model.Project, string, error)
 	GetTasks(ctx context.Context, userId, token, domain, refreshToken string) ([]model.Task, string, error)
 	GetComments(ctx context.Context, userId, token, taskId, domain, refreshToken string) ([]model.Comment, string, error)
-	GetAiComment(ctx context.Context, userId, token, issueTitle, issueDescription, domain, refreshToken string, existingComments []string) (string, error)
+	GetAiComment(ctx context.Context, userId, token, issueTitle, issueDescription, domain, refreshToken string, existingComments []string) (string, string, error)
 	PostComment(ctx context.Context, userId, taskId, comment, token, domain, refreshToken string) (model.Comment, string, error)
 }
 
@@ -217,29 +217,37 @@ func (b *backlogUsecase) GetComments(ctx context.Context, userId, token, taskId,
 	return comments, "", nil
 }
 
-func (b *backlogUsecase) GetAiComment(ctx context.Context, userId, token, issueTitle, issueDescription, domain, refreshToken string, existingComments []string) (string, error) {
+func (b *backlogUsecase) GetAiComment(ctx context.Context, userId, token, issueTitle, issueDescription, domain, refreshToken string, existingComments []string) (string, string, error) {
 	reqURL := fmt.Sprintf("https://%s/api/v2/users/myself", domain)
+
+	var newToken *model.TokenResponse = nil
 
 	resp, err := b.requestBacklogAPI(ctx, "GET", reqURL, token, nil)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		newToken, err := b.refreshAccessToken(ctx, domain, refreshToken)
+		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		resp, err = b.requestBacklogAPI(ctx, "GET", reqURL, newToken.AccessToken, nil)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		defer resp.Body.Close()
 	}
 
+	if newToken != nil && newToken.RefreshToken != "" {
+		if err := b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
+			return "", "", fmt.Errorf("failed to update refresh token: %v", err)
+		}
+	}
+
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to get user info, status code: %d", resp.StatusCode)
+		return "", newToken.AccessToken, fmt.Errorf("failed to get user info, status code: %d", resp.StatusCode)
 	}
 
 	var userInfo struct {
@@ -247,7 +255,7 @@ func (b *backlogUsecase) GetAiComment(ctx context.Context, userId, token, issueT
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
-		return "", fmt.Errorf("JSONデコーディングエラー: %v", err)
+		return "", newToken.AccessToken, fmt.Errorf("JSONデコーディングエラー: %v", err)
 	}
 
 	userName := userInfo.Name
@@ -271,12 +279,12 @@ func (b *backlogUsecase) GetAiComment(ctx context.Context, userId, token, issueT
 		"messages": messages,
 	})
 	if err != nil {
-		return "", fmt.Errorf("JSONエンコーディングエラー: %v", err)
+		return "", newToken.AccessToken, fmt.Errorf("JSONエンコーディングエラー: %v", err)
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
-		return "", fmt.Errorf("HTTPリクエスト作成エラー: %v", err)
+		return "", newToken.AccessToken, fmt.Errorf("HTTPリクエスト作成エラー: %v", err)
 	}
 
 	apiKey := os.Getenv("OPENAI_SECRETKEY")
@@ -286,13 +294,13 @@ func (b *backlogUsecase) GetAiComment(ctx context.Context, userId, token, issueT
 	client := &http.Client{}
 	resp, err = client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("HTTPリクエスト送信エラー: %v", err)
+		return "", newToken.AccessToken, fmt.Errorf("HTTPリクエスト送信エラー: %v", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("レスポンス読み込みエラー: %v", err)
+		return "", newToken.AccessToken, fmt.Errorf("レスポンス読み込みエラー: %v", err)
 	}
 
 	var response struct {
@@ -301,14 +309,20 @@ func (b *backlogUsecase) GetAiComment(ctx context.Context, userId, token, issueT
 		} `json:"choices"`
 	}
 	if err := json.Unmarshal(body, &response); err != nil {
-		return "", fmt.Errorf("JSONデコーディングエラー: %v", err)
+		return "", newToken.AccessToken, fmt.Errorf("JSONデコーディングエラー: %v", err)
 	}
 
-	if len(response.Choices) > 0 && response.Choices[0].Message != nil {
-		return response.Choices[0].Message["content"], nil
+	if len(response.Choices) == 0 || response.Choices[0].Message == nil {
+		return "", newToken.AccessToken, fmt.Errorf("コメントが生成されませんでした")
 	}
 
-	return "", fmt.Errorf("コメントが生成されませんでした")
+	if newToken != nil && newToken.RefreshToken != "" {
+		if err := b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
+			return "", newToken.AccessToken, fmt.Errorf("failed to update refresh token: %v", err)
+		}
+	}
+
+	return response.Choices[0].Message["content"], newToken.AccessToken, nil
 }
 
 func (b *backlogUsecase) PostComment(ctx context.Context, userId, taskId, comment, token, domain, refreshToken string) (model.Comment, string, error) {
