@@ -266,7 +266,6 @@ func EncryptUserID(userID string) (string, error) {
 	return base64.URLEncoding.EncodeToString(ciphertext), nil
 }
 
-// トークン系関数
 func (u *authUsecase) generateAccessTokens(email string) (accessToken string, err error) {
 	accessTokenClaims := jwt.MapClaims{
 		"email": email,

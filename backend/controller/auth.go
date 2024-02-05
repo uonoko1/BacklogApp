@@ -187,6 +187,13 @@ func (c *authController) Logout(ctx echo.Context) error {
 		HttpOnly: true,
 		MaxAge:   -1,
 	})
+	ctx.SetCookie(&http.Cookie{
+		Name:     "backlog_token",
+		Value:    "",
+		Path:     "/api",
+		HttpOnly: true,
+		MaxAge:   -1,
+	})
 
 	return ctx.NoContent(http.StatusOK)
 }
