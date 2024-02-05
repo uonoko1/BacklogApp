@@ -48,7 +48,7 @@ func (c *backlogController) OAuthCallback(ctx echo.Context) error {
 	ctx.SetCookie(&http.Cookie{
 		Name:     "backlog_token",
 		Value:    accessToken,
-		Path:     "/",
+		Path:     "/api",
 		HttpOnly: true,
 		Secure:   true,
 		Expires:  time.Now().Add(24 * time.Hour),
@@ -90,7 +90,7 @@ func (c *backlogController) GetProjects(ctx echo.Context) error {
 		ctx.SetCookie(&http.Cookie{
 			Name:     "backlog_token",
 			Value:    newAccessToken,
-			Path:     "/",
+			Path:     "/api",
 			HttpOnly: true,
 			Secure:   true,
 			Expires:  time.Now().Add(24 * time.Hour),
@@ -133,7 +133,7 @@ func (c *backlogController) GetTasks(ctx echo.Context) error {
 		ctx.SetCookie(&http.Cookie{
 			Name:     "backlog_token",
 			Value:    newAccessToken,
-			Path:     "/",
+			Path:     "/api",
 			HttpOnly: true,
 			Secure:   true,
 			Expires:  time.Now().Add(24 * time.Hour),
@@ -176,7 +176,7 @@ func (c *backlogController) GetMyself(ctx echo.Context) error {
 		ctx.SetCookie(&http.Cookie{
 			Name:     "backlog_token",
 			Value:    newAccessToken,
-			Path:     "/",
+			Path:     "/api",
 			HttpOnly: true,
 			Secure:   true,
 			Expires:  time.Now().Add(24 * time.Hour),
@@ -226,7 +226,7 @@ func (c *backlogController) GetComments(ctx echo.Context) error {
 		ctx.SetCookie(&http.Cookie{
 			Name:     "backlog_token",
 			Value:    newAccessToken,
-			Path:     "/",
+			Path:     "/api",
 			HttpOnly: true,
 			Secure:   true,
 			Expires:  time.Now().Add(24 * time.Hour),
@@ -288,7 +288,7 @@ func (c *backlogController) PostComment(ctx echo.Context) error {
 		ctx.SetCookie(&http.Cookie{
 			Name:     "backlog_token",
 			Value:    newAccessToken,
-			Path:     "/",
+			Path:     "/api",
 			HttpOnly: true,
 			Secure:   true,
 			Expires:  time.Now().Add(24 * time.Hour),
