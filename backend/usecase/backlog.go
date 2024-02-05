@@ -96,7 +96,7 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 
 	var newToken *model.TokenResponse = nil
 
-	resp, err := b.requestBacklogAPI(ctx, "GET", reqURL, token, nil)
+	resp, err := b.requestBacklogAPI(ctx, "GET", reqURL, token, nil, "")
 	if err != nil {
 		return nil, "", err
 	}
@@ -108,7 +108,7 @@ func (b *backlogUsecase) GetProjects(ctx context.Context, userId, token, domain,
 		if err != nil {
 			return nil, "", err
 		}
-		resp, err = b.requestBacklogAPI(ctx, "GET", reqURL, newToken.AccessToken, nil)
+		resp, err = b.requestBacklogAPI(ctx, "GET", reqURL, newToken.AccessToken, nil, "")
 		if err != nil {
 			return nil, "", err
 		}
@@ -140,7 +140,7 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 
 	var newToken *model.TokenResponse = nil
 
-	resp, err := b.requestBacklogAPI(ctx, "GET", reqURL, token, nil)
+	resp, err := b.requestBacklogAPI(ctx, "GET", reqURL, token, nil, "")
 	if err != nil {
 		return nil, "", err
 	}
@@ -152,7 +152,7 @@ func (b *backlogUsecase) GetTasks(ctx context.Context, userId, token, domain, re
 		if err != nil {
 			return nil, "", err
 		}
-		resp, err = b.requestBacklogAPI(ctx, "GET", reqURL, newToken.AccessToken, nil)
+		resp, err = b.requestBacklogAPI(ctx, "GET", reqURL, newToken.AccessToken, nil, "")
 		if err != nil {
 			return nil, "", err
 		}
@@ -184,7 +184,7 @@ func (b *backlogUsecase) GetComments(ctx context.Context, userId, token, taskId,
 
 	var newToken *model.TokenResponse = nil
 
-	resp, err := b.requestBacklogAPI(ctx, "GET", reqURL, token, nil)
+	resp, err := b.requestBacklogAPI(ctx, "GET", reqURL, token, nil, "")
 	if err != nil {
 		return nil, "", err
 	}
@@ -196,7 +196,7 @@ func (b *backlogUsecase) GetComments(ctx context.Context, userId, token, taskId,
 		if err != nil {
 			return nil, "", err
 		}
-		resp, err = b.requestBacklogAPI(ctx, "GET", reqURL, newToken.AccessToken, nil)
+		resp, err = b.requestBacklogAPI(ctx, "GET", reqURL, newToken.AccessToken, nil, "")
 		if err != nil {
 			return nil, "", err
 		}
@@ -227,7 +227,7 @@ func (b *backlogUsecase) GetMyself(ctx context.Context, userId, token, domain, r
 
 	var newToken *model.TokenResponse = nil
 
-	resp, err := b.requestBacklogAPI(ctx, "GET", reqURL, token, nil)
+	resp, err := b.requestBacklogAPI(ctx, "GET", reqURL, token, nil, "")
 	if err != nil {
 		return "", "", err
 	}
@@ -240,7 +240,7 @@ func (b *backlogUsecase) GetMyself(ctx context.Context, userId, token, domain, r
 			return "", "", err
 		}
 
-		resp, err = b.requestBacklogAPI(ctx, "GET", reqURL, newToken.AccessToken, nil)
+		resp, err = b.requestBacklogAPI(ctx, "GET", reqURL, newToken.AccessToken, nil, "")
 		if err != nil {
 			return "", "", err
 		}
@@ -331,32 +331,33 @@ func (u *backlogUsecase) GetAiComment(ctx context.Context, issueTitle, issueDesc
 func (b *backlogUsecase) PostComment(ctx context.Context, userId, taskId, comment, token, domain, refreshToken string) (model.Comment, string, error) {
 	reqURL := fmt.Sprintf("https://%s/api/v2/issues/%s/comments", domain, taskId)
 
-	commentData := map[string]string{"content": comment}
-	jsonData, err := json.Marshal(commentData)
-	if err != nil {
-		return model.Comment{}, "", fmt.Errorf("comment dataのマーシャリングに失敗しました: %v", err)
-	}
+	var newToken *model.TokenResponse = nil
 
-	resp, err := b.requestBacklogAPI(ctx, "POST", reqURL, token, bytes.NewBuffer(jsonData))
+	formData := url.Values{}
+	formData.Set("content", comment)
+	encodedData := formData.Encode()
+
+	resp, err := b.requestBacklogAPI(ctx, "POST", reqURL, token, strings.NewReader(encodedData), "application/x-www-form-urlencoded")
 	if err != nil {
 		return model.Comment{}, "", err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode == http.StatusUnauthorized {
 		resp.Body.Close()
-		newToken, err := b.refreshAccessToken(ctx, domain, refreshToken)
+		newToken, err = b.refreshAccessToken(ctx, domain, refreshToken)
 		if err != nil {
 			return model.Comment{}, "", err
 		}
-		resp, err = b.requestBacklogAPI(ctx, "POST", reqURL, newToken.AccessToken, bytes.NewBuffer(jsonData))
+
+		resp, err = b.requestBacklogAPI(ctx, "POST", reqURL, newToken.AccessToken, strings.NewReader(encodedData), "application/x-www-form-urlencoded")
 		if err != nil {
 			return model.Comment{}, "", err
 		}
 		defer resp.Body.Close()
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusCreated {
 		return model.Comment{}, "", fmt.Errorf("commentの投稿に失敗しました, status code: %d", resp.StatusCode)
 	}
 
@@ -365,15 +366,25 @@ func (b *backlogUsecase) PostComment(ctx context.Context, userId, taskId, commen
 		return model.Comment{}, "", fmt.Errorf("commentのデコードに失敗しました: %v", err)
 	}
 
+	if newToken != nil && newToken.RefreshToken != "" {
+		if err := b.r.AddBacklogRefreshToken(ctx, userId, newToken.RefreshToken, domain); err != nil {
+			return model.Comment{}, "", fmt.Errorf("refresh tokenの更新に失敗しました: %v", err)
+		}
+		return postedComment, newToken.AccessToken, nil
+	}
+
 	return postedComment, "", nil
 }
 
-func (b *backlogUsecase) requestBacklogAPI(ctx context.Context, method, url, token string, body io.Reader) (*http.Response, error) {
+func (b *backlogUsecase) requestBacklogAPI(ctx context.Context, method, url, token string, body io.Reader, contentType string) (*http.Response, error) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+token)
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
+	}
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	return client.Do(req.WithContext(ctx))
