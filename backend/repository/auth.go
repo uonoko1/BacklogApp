@@ -52,18 +52,13 @@ func (r *authRepository) Create(ctx context.Context, user *model.User) (*model.U
 	}
 
 	query := `INSERT INTO users (userid, username, email, password) VALUES (?, ?, ?, ?)`
-	result, err := execer.ExecContext(ctx, query, user.UserId, user.Username, user.Email, user.Password)
+	_, err := execer.ExecContext(ctx, query, user.UserId, user.Username, user.Email, user.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	query = `SELECT id, userid, username, email, password FROM users WHERE id = ?`
-	row := r.db.QueryRowContext(ctx, query, id)
+	query = `SELECT id, userid, username, email, password FROM users WHERE userid = ?`
+	row := r.db.QueryRowContext(ctx, query, user.UserId)
 	var newUser model.User
 	err = row.Scan(&newUser.Id, &newUser.UserId, &newUser.Username, &newUser.Email, &newUser.Password)
 	if err != nil {
