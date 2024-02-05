@@ -99,6 +99,7 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
 
     const onSubmit = async () => {
         if (!inputComment || !selectTask) return;
+        console.log("onSubmitの実行")
         setIsLoading(true);
         try {
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/backlog/comment/submit`, {
