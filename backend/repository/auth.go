@@ -45,6 +45,7 @@ func (r *authRepository) FindUserByEmail(ctx context.Context, email string) (*mo
 func (r *authRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
 	var execer interface {
 		ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+		QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 	} = r.db
 
 	if tx, ok := ctx.Value("tx").(*sql.Tx); ok {
@@ -52,19 +53,20 @@ func (r *authRepository) Create(ctx context.Context, user *model.User) (*model.U
 	}
 
 	query := `INSERT INTO users (userid, username, email, password) VALUES (?, ?, ?, ?)`
-	_, err := execer.ExecContext(ctx, query, user.UserId, user.Username, user.Email, user.Password)
+	result, err := execer.ExecContext(ctx, query, user.UserId, user.Username, user.Email, user.Password)
 	if err != nil {
-		fmt.Println("1")
 		return nil, err
 	}
 
-	query = `SELECT id, userid, username, email, password FROM users WHERE userid = ?`
-	row := r.db.QueryRowContext(ctx, query, user.UserId)
-
-	var newUser model.User
-	err = row.Scan(&newUser.Id, &newUser.UserId, &newUser.Username, &newUser.Email, &newUser.Password)
+	id, err := result.LastInsertId()
 	if err != nil {
-		fmt.Println("2")
+		return nil, err
+	}
+
+	query = `SELECT id, userid, username, email, password FROM users WHERE id = ?`
+	row := execer.QueryRowContext(ctx, query, id)
+	var newUser model.User
+	if err := row.Scan(&newUser.Id, &newUser.UserId, &newUser.Username, &newUser.Email, &newUser.Password); err != nil {
 		return nil, err
 	}
 
