@@ -157,11 +157,6 @@ export default function Center() {
         if (tasks) setDisplayTasks(tasks);
     }, [location])
 
-    const shouldShowSearchBox = () => {
-        const path = location.pathname;
-        return path.endsWith('/') || path.endsWith('/projects');
-    };
-
     return (
         <div className={`Center ${backlogOAuth ? 'AuthCenter' : ''}`}>
             {backlogOAuth ?
@@ -183,12 +178,10 @@ export default function Center() {
                 </>
                 :
                 <>
-                    {shouldShowSearchBox() && (
-                        <div className='SearchBox'>
-                            <SearchIcon />
-                            <input type='text' value={searchInput} onChange={(e) => handleSearch(e.target.value)} placeholder={placeholder()} className='SearchBoxInput' />
-                        </div>
-                    )}
+                    <div className='SearchBox'>
+                        <SearchIcon />
+                        <input type='text' value={searchInput} onChange={(e) => handleSearch(e.target.value)} placeholder={placeholder()} className='SearchBoxInput' />
+                    </div>
                     {path === 'projects' && (
                         <Projects
                             projects={displayProjects}
