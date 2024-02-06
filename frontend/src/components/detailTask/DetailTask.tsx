@@ -201,7 +201,7 @@ export default function DetailTask({ tasks }: DetailTaskProps) {
                                         </div>
                                         :
                                         <>
-                                            <button type='button'>閉じる</button>
+                                            <button type='button' onClick={() => setOpenEditor(false)}>閉じる</button>
                                             <button type='button' onClick={onSubmit} className='rightButton'>投稿</button>
                                         </>
                                     }
