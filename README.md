@@ -3,7 +3,7 @@
 
 <p>▼URL</p>
 <a href="https://backlog.daichisakai.net" target="_brank">https://backlog.daichisakai.net</a>
-
+<br />
 <p>▼使用技術</p>
 <ul>
 <li>React/TypeScript</li>
