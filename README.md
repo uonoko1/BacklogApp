@@ -4,7 +4,9 @@
 <p>▼URL</p>
 <a href="https://backlog.daichisakai.net" target="_brank">https://backlog.daichisakai.net</a>
 
-<ul>▼使用技術</ul>
+<p>▼使用技術</p>
+<ul>
 <li>React/TypeScript</li>
 <li>Go/echo</li>
 <li>MySQL</li>
+</ul>
