@@ -2,8 +2,8 @@
 <p>ChatGPT4のAPIで課題コメントの自動生成機能がついています。</p>
 
 <p>▼URL</p>
-<a href="https://backlog.daichisakai.net" target="_brank">https://backlog.daichisakai.net</a>
-<br />
+<a href="https://backlog.daichisakai.net" target="_blank">https://backlog.daichisakai.net</a>
+<br>
 <p>▼使用技術</p>
 <ul>
 <li>React/TypeScript</li>
